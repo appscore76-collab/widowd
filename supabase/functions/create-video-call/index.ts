@@ -6,8 +6,8 @@
 //           (supabase.functions.invoke('create-video-call', { body: { otherUserId } })).
 // Response: { roomName, roomUrl, expiresAt, token }
 //
-// The first call for a pair creates the room, which requires the caller to be a
-// Plus member. A matched partner calling while that room is still open joins it.
+// Both participants must be Plus members. The first call for a pair creates the
+// room; the partner calling while that room is still open joins it.
 //
 // Secrets (supabase secrets set ...): DAILY_API_KEY, DAILY_DOMAIN.
 // DAILY_API_KEY is only ever sent to api.daily.co and never appears in a response.
@@ -85,6 +85,7 @@ export default {
       return json({ error: 'lookup_failed' }, 500)
     }
     const isPlus = !!caller?.plus_expires_at && new Date(caller.plus_expires_at) > new Date()
+    if (!isPlus) return json({ error: 'plus_required' }, 403)
 
     const daily = async (method: string, path: string, body?: unknown) => {
       const res = await fetch(`${DAILY_API}${path}`, {
@@ -124,7 +125,6 @@ export default {
 
     let room = await getOpenRoom()
     if (!room) {
-      if (!isPlus) return json({ error: 'plus_required' }, 403)
       const created = await daily('POST', '/rooms', {
         name: roomName,
         privacy: 'private',
