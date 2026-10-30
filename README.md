@@ -1,17 +1,19 @@
 # widowd
 
-A new Flutter project.
+Flutter web app, deployed to Cloudflare Pages at https://widowd.pages.dev,
+with a Supabase backend.
 
-## Getting Started
+See [docs/SETUP.md](docs/SETUP.md) to set up GitHub, Cloudflare Pages, Claude
+Code on the web, Flutter and Supabase.
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+```
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter test
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter run -d chrome
+```
