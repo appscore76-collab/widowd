@@ -157,8 +157,7 @@ supabase functions deploy didit-webhook --no-verify-jwt --project-ref gzgrbbeohc
 - **Didit:** set the webhook URL to
   `https://gzgrbbeohcerznezawna.supabase.co/functions/v1/didit-webhook`.
 
-**Sign-in.** The app offers email and password, a magic link by email,
-Google, Apple and Facebook. It connects
+**Sign-in.** The app offers email and password, Google and Apple. It connects
 to `widowd-dev` by default; build against staging with
 `--dart-define=SUPABASE_URL=https://dhpjlwicmtszknhefwfr.supabase.co --dart-define=SUPABASE_PUBLISHABLE_KEY=...`.
 In each project, under **Authentication**:
@@ -166,11 +165,8 @@ In each project, under **Authentication**:
 - **URL Configuration:** set the Site URL to `https://widowd.pages.dev` and
   add `https://widowd.pages.dev/**`, `https://*.widowd.pages.dev/**` (preview
   deploys) and `http://localhost:*/**` to the redirect URLs. Google, Apple,
-  Facebook, magic links, confirmation emails and password-reset emails all
-  send members back here.
+  confirmation emails and password-reset emails all send members back here.
 - **Sign In / Providers → Email:** on by default. Keep "Confirm email" on.
-  Magic links use this provider too; nothing else to turn on. Under **Emails →
-  Templates**, the "Magic link" template is the email they receive.
 - **Sign In / Providers → Google:** create an OAuth client ID (type "Web
   application") in Google Cloud Console, add
   `https://<project-ref>.supabase.co/auth/v1/callback` as an authorized
@@ -179,13 +175,6 @@ In each project, under **Authentication**:
   a Services ID with Sign in with Apple, set its return URL to the same
   callback, create a Sign in with Apple key, and enter the Services ID, team
   ID, key ID and key in Supabase. Apple's secret expires every 6 months.
-- **Sign In / Providers → Facebook:** create an app at
-  developers.facebook.com with the "Authenticate and request data from users
-  with Facebook Login" use case, add the `email` permission, add the same
-  callback under Facebook Login → Settings → Valid OAuth Redirect URIs, then
-  paste the app ID and app secret into Supabase. Switch the app to Live mode
-  before launch; in Development mode only people with a role on the app can
-  sign in.
 - **Emails:** Supabase's built-in email sender is rate-limited and meant for
   testing; set up custom SMTP before launch.
 
