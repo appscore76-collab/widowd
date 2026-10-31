@@ -11,9 +11,20 @@ String? get authRedirectUrl => kIsWeb ? Uri.base.origin : null;
 enum _Mode { signIn, signUp }
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({super.key, required this.auth});
+  const SignInPage({
+    super.key,
+    required this.auth,
+    this.startWithSignUp = false,
+    this.onBack,
+  });
 
   final GoTrueClient auth;
+
+  /// Opens on account creation instead of sign-in.
+  final bool startWithSignUp;
+
+  /// Returns to the landing page.
+  final VoidCallback? onBack;
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -23,7 +34,7 @@ class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  _Mode _mode = _Mode.signIn;
+  late _Mode _mode = widget.startWithSignUp ? _Mode.signUp : _Mode.signIn;
   bool _busy = false;
   String? _error;
   String? _notice;
@@ -113,6 +124,12 @@ class _SignInPageState extends State<SignInPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: widget.onBack == null
+          ? null
+          : AppBar(
+              leading: BackButton(onPressed: widget.onBack),
+              title: const Text('widowd'),
+            ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

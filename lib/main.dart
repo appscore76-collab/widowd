@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
+import 'members/members_repository.dart';
 
 // The publishable key is safe to ship in the app; row-level security decides
 // what each member can read and write. Defaults point at widowd-dev; build
@@ -26,16 +27,32 @@ Future<void> main() async {
 }
 
 class WidowdApp extends StatelessWidget {
-  const WidowdApp({super.key, required this.auth});
+  const WidowdApp({super.key, required this.auth, this.repository});
 
   final GoTrueClient auth;
+
+  /// Overrides the Supabase-backed members data layer, for tests.
+  final MembersRepository Function()? repository;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'widowd',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: AuthGate(auth: auth),
+      theme: ThemeData(
+        colorScheme: .fromSeed(seedColor: const Color(0xFF5B6F8F)),
+      ),
+      darkTheme: ThemeData(
+        colorScheme: .fromSeed(
+          seedColor: const Color(0xFF5B6F8F),
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: AuthGate(
+        auth: auth,
+        repository:
+            repository ??
+            () => SupabaseMembersRepository(Supabase.instance.client),
+      ),
     );
   }
 }

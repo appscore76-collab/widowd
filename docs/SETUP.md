@@ -7,7 +7,8 @@ environment fit together, and how to set each one up.
 
 | Path | What it is |
 | --- | --- |
-| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now) |
+| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now): landing page, sign-in, and the free member features (profile, browse, match suggestions) |
+| `supabase/migrations/` | Database schema, row-level security, the `profile-photos` bucket and the daily match-suggestion job |
 | `.github/workflows/deploy-web.yml` | Builds the web app and deploys it to Cloudflare Pages |
 | `supabase/functions/create-video-call/` | Edge Function: Daily video call token for two matched Plus members |
 | `supabase/functions/start-verification/` | Edge Function: starts a Didit ID or photo verification |
@@ -115,14 +116,41 @@ is needed for web work.
 | `widowd-dev` | `gzgrbbeohcerznezawna` |
 | `widowd-staging` | `dhpjlwicmtszknhefwfr` |
 
-**The database schema hasn't been created yet.** The Edge Functions expect:
+**Database schema.** `supabase/migrations/` holds the schema. It has been
+applied to `widowd-dev`; apply it to `widowd-staging` (and any new project)
+with:
 
-- `profiles`: `id` (= `auth.users.id`), `display_name`, `photo_path`,
-  `plus_expires_at`, `id_verified`, `photo_verified`
-- `matches`: `user_a`, `user_b`, `status` (`'matched'` while active)
-- `verifications`: `session_id` (primary key), `user_id`, `kind`
-  (`'id'` or `'photo'`), `status`, `created_at`, `decided_at`
-- A storage bucket named `profile-photos`
+```bash
+supabase link --project-ref dhpjlwicmtszknhefwfr
+```
+
+```bash
+supabase db push
+```
+
+What it creates:
+
+- `profiles`: one row per account, created automatically at sign-up. Members
+  can read listed profiles and their own, and can update only their own
+  `display_name`, `birth_year`, `gender`, `interested_in`, `city`, `bio` and
+  `photo_path`. `plus_expires_at`, `id_verified` and `photo_verified` are set
+  only by Edge Functions (service role), and members can't read
+  `plus_expires_at`. A profile is `listed`, and shown to others, once it has
+  a name, birth year, gender, who they're interested in and a photo.
+- `matches`: one row per pair (`user_a < user_b`). The system writes
+  suggestions with status `'suggested'`; `'matched'` is what
+  `create-video-call` treats as active. Members can only read their own rows.
+- `verifications`: written by `start-verification` and `didit-webhook`;
+  members can read their own.
+- The private `profile-photos` bucket (2 MB, JPEG/PNG/WebP). Members upload
+  into a folder named after their user ID; photos of listed members are
+  readable by signed-in members through signed URLs.
+- **Match suggestions.** When a profile becomes listed, it gets up to 3
+  suggestions straight away, and a `pg_cron` job (`suggest-matches-daily`,
+  04:17 UTC) tops up every listed member by 3 more each day. People are
+  suggested when each is interested in the other's gender and they're within
+  15 years of age; closer age, the same town and verification badges rank
+  higher. The logic is in `private.suggest_matches_for()`.
 
 **Secrets.** Set these per project. They're read only by the Edge Functions
 and never returned to the app.
