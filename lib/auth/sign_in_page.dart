@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Where Supabase sends members back to after Google, Apple, a confirmation
-/// email or a password-reset email. On the web that's whichever site is
+/// Where Supabase sends members back to after Google, Apple, Facebook, a
+/// magic link, a confirmation email or a password-reset email. On the web that's whichever site is
 /// running (widowd.pages.dev, a preview deploy or localhost), and each one
 /// must be in the project's redirect URL allow list.
 String? get authRedirectUrl => kIsWeb ? Uri.base.origin : null;
@@ -94,6 +94,25 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
+  Future<void> _magicLink() async {
+    final email = _email.text.trim();
+    if (!_isEmail(email)) {
+      setState(() {
+        _error = 'Enter your email address above to get a sign-in link';
+        _notice = null;
+      });
+      return;
+    }
+    await _run(() async {
+      // Creates the account on first use, like Google, Apple and Facebook.
+      await widget.auth.signInWithOtp(
+        email: email,
+        emailRedirectTo: authRedirectUrl,
+      );
+      _notice = 'Check $email for a link to sign in.';
+    });
+  }
+
   Future<void> _oauth(OAuthProvider provider) => _run(() async {
     await widget.auth.signInWithOAuth(
       provider,
@@ -144,6 +163,14 @@ class _SignInPageState extends State<SignInPage> {
                           : () => _oauth(OAuthProvider.apple),
                       icon: const Icon(Icons.apple),
                       label: const Text('Continue with Apple'),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.tonalIcon(
+                      onPressed: _busy
+                          ? null
+                          : () => _oauth(OAuthProvider.facebook),
+                      icon: const Icon(Icons.facebook),
+                      label: const Text('Continue with Facebook'),
                     ),
                     const SizedBox(height: 24),
                     const Row(
@@ -224,6 +251,14 @@ class _SignInPageState extends State<SignInPage> {
                             )
                           : Text(signingUp ? 'Create account' : 'Sign in'),
                     ),
+                    if (!signingUp) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _busy ? null : _magicLink,
+                        icon: const Icon(Icons.mail_outline),
+                        label: const Text('Email me a sign-in link instead'),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: _busy
