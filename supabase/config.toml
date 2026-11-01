@@ -1,0 +1,30 @@
+# Supabase CLI configuration for widowd.
+# The deploy workflow (.github/workflows/deploy-supabase-dev.yml) links this
+# repository to widowd-dev and pushes supabase/migrations and supabase/functions.
+project_id = "widowd"
+
+[api]
+schemas = ["public"]
+
+[db]
+major_version = 17
+
+[auth]
+site_url = "https://widowd.pages.dev"
+additional_redirect_urls = [
+  "https://widowd.pages.dev/**",
+  "https://*.widowd.pages.dev/**",
+  "http://localhost:*/**",
+  "widowd://login-callback",
+]
+
+# Called by signed-in members; the gateway checks their session first.
+[functions.create-video-call]
+verify_jwt = true
+
+[functions.start-verification]
+verify_jwt = true
+
+# Didit doesn't send a Supabase token; the function checks Didit's signature.
+[functions.didit-webhook]
+verify_jwt = false

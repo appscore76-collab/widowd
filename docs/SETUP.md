@@ -7,8 +7,13 @@ environment fit together, and how to set each one up.
 
 | Path | What it is |
 | --- | --- |
-| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now) |
+| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now): landing page, sign-in, and the free member features (profile, browse, match suggestions). Routes in `lib/app/router.dart`, shared state in `lib/app/providers.dart` |
+| `assets/landing/`, `assets/fonts/` | Landing page screenshots and screen recordings (from the landing page design canvas), and Plus Jakarta Sans (SIL Open Font License, `assets/fonts/OFL.txt`) |
+| `supabase/config.toml` | Supabase CLI settings: Edge Function JWT checks and auth redirect URLs |
+| `supabase/migrations/` | Database schema, row-level security, the `profile-photos` bucket and the daily match-suggestion job |
 | `.github/workflows/deploy-web.yml` | Builds the web app and deploys it to Cloudflare Pages |
+| `.github/workflows/deploy-supabase-dev.yml` | Pushes migrations and Edge Functions to `widowd-dev` |
+| `docs/ROADMAP.md` | What's left to build the full mobile and web app on dev, and in what order |
 | `supabase/functions/create-video-call/` | Edge Function: Daily video call token for two matched Plus members |
 | `supabase/functions/start-verification/` | Edge Function: starts a Didit ID or photo verification |
 | `supabase/functions/didit-webhook/` | Edge Function: receives Didit results and sets badges |
@@ -35,6 +40,18 @@ approve the install.
 | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | A Cloudflare API token with the **Cloudflare Pages: Edit** permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+| `SUPABASE_ACCESS_TOKEN` | A Supabase personal access token (Account > Access Tokens), used by `deploy-supabase-dev.yml` |
+| `SUPABASE_DEV_DB_PASSWORD` | The `widowd-dev` database password (Project Settings > Database) |
+
+And this **variable** on the **Variables** tab (it isn't secret; a DSN ships
+inside the app):
+
+| Variable | Value |
+| --- | --- |
+| `SENTRY_DSN` | The DSN of a Sentry project for the web app. Without it, error reporting is off |
+
+Until the two Supabase secrets are added, `deploy-supabase-dev.yml` skips with
+a warning.
 
 ## 2. Cloudflare Pages
 
@@ -104,6 +121,19 @@ flutter build web --release
 flutter run -d chrome
 ```
 
+Build-time settings, each passed as `--dart-define=NAME=value`:
+
+| Name | Default | What it does |
+| --- | --- | --- |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | `widowd-dev` | Which Supabase project the app talks to |
+| `SENTRY_DSN` | empty (off) | Turns on error reporting to Sentry |
+| `APP_ENV` | `dev` | Environment name reported to Sentry (`deploy-web.yml` sets `production` for `main`) |
+
+Pages have their own web addresses: `/`, `/sign-in`, `/join`,
+`/reset-password`, `/app/discover`, `/app/search`, `/app/me` and
+`/app/members/<id>`. Cloudflare Pages sends any address to the app (there's no
+`404.html`), so refreshing or sharing a link works.
+
 Only the web platform is set up. `flutter doctor` will report the Android
 toolchain and Linux desktop libraries as missing in the cloud container; neither
 is needed for web work.
@@ -115,14 +145,46 @@ is needed for web work.
 | `widowd-dev` | `gzgrbbeohcerznezawna` |
 | `widowd-staging` | `dhpjlwicmtszknhefwfr` |
 
-**The database schema hasn't been created yet.** The Edge Functions expect:
+**Database schema.** `supabase/migrations/` holds the schema, and it's
+applied to `widowd-dev`. Changes reach `widowd-dev` through
+`deploy-supabase-dev.yml`, on pushes to `main` that touch `supabase/` or
+when run by hand from the Actions tab. `widowd-staging` is empty and isn't
+used yet. To apply the schema by hand:
 
-- `profiles`: `id` (= `auth.users.id`), `display_name`, `photo_path`,
-  `plus_expires_at`, `id_verified`, `photo_verified`
-- `matches`: `user_a`, `user_b`, `status` (`'matched'` while active)
-- `verifications`: `session_id` (primary key), `user_id`, `kind`
-  (`'id'` or `'photo'`), `status`, `created_at`, `decided_at`
-- A storage bucket named `profile-photos`
+```bash
+supabase link --project-ref gzgrbbeohcerznezawna
+```
+
+```bash
+supabase db push
+```
+
+Migration file names must match the versions recorded in the project
+(`supabase migration list`), or `db push` tries to run them again.
+
+What it creates:
+
+- `profiles`: one row per account, created automatically at sign-up. Members
+  can read listed profiles and their own, and can update only their own
+  `display_name`, `birth_year`, `gender`, `interested_in`, `city`, `bio` and
+  `photo_path`. `plus_expires_at`, `id_verified` and `photo_verified` are set
+  only by Edge Functions (service role), and members can't read
+  `plus_expires_at`. A profile is `listed`, and shown to others, once it has
+  a name, birth year, gender, who they're interested in and a photo.
+- `matches`: one row per pair (`user_a < user_b`). The system writes
+  suggestions with status `'suggested'`; `'matched'` is what
+  `create-video-call` treats as active. Members can only read their own rows.
+- `verifications`: written by `start-verification` and `didit-webhook`;
+  members can read their own.
+- The private `profile-photos` bucket (2 MB, JPEG/PNG/WebP). Members upload
+  into a folder named after their user ID; photos of listed members are
+  readable by signed-in members through signed URLs.
+- **Match suggestions.** When a profile becomes listed, it gets up to 3
+  suggestions straight away, and a `pg_cron` job (`suggest-matches-daily`,
+  04:17 UTC) tops up every listed member by 3 more each day. People are
+  suggested when each is interested in the other's gender and they're within
+  15 years of age; closer age, the same town and verification badges rank
+  higher. The logic is in `private.suggest_matches_for()`.
 
 **Secrets.** Set these per project. They're read only by the Edge Functions
 and never returned to the app.
@@ -135,8 +197,11 @@ supabase secrets set DAILY_API_KEY=... DAILY_DOMAIN=... --project-ref gzgrbbeohc
 supabase secrets set DIDIT_API_KEY=... DIDIT_WORKFLOW_ID_IDCHECK=... DIDIT_WORKFLOW_ID_PHOTO=... DIDIT_WEBHOOK_SECRET=... --project-ref gzgrbbeohcerznezawna
 ```
 
-**Deploy the functions.** `didit-webhook` needs JWT verification off because
-Didit doesn't send a Supabase token; it checks Didit's signature instead.
+**Deploy the functions.** All three are deployed to `widowd-dev`; until the
+secrets above are set they answer `not_configured`. `deploy-supabase-dev.yml`
+redeploys them, using the JWT settings in `supabase/config.toml`. By hand:
+`didit-webhook` needs JWT verification off because Didit doesn't send a
+Supabase token; it checks Didit's signature instead.
 
 ```bash
 supabase functions deploy create-video-call --project-ref gzgrbbeohcerznezawna
@@ -156,6 +221,27 @@ supabase functions deploy didit-webhook --no-verify-jwt --project-ref gzgrbbeohc
   domain.
 - **Didit:** set the webhook URL to
   `https://gzgrbbeohcerznezawna.supabase.co/functions/v1/didit-webhook`.
+
+**Sign-in.** The app offers email and password, Google and Apple. It connects
+to `widowd-dev` by default; build against staging with
+`--dart-define=SUPABASE_URL=https://dhpjlwicmtszknhefwfr.supabase.co --dart-define=SUPABASE_PUBLISHABLE_KEY=...`.
+In each project, under **Authentication**:
+
+- **URL Configuration:** set the Site URL to `https://widowd.pages.dev` and
+  add `https://widowd.pages.dev/**`, `https://*.widowd.pages.dev/**` (preview
+  deploys) and `http://localhost:*/**` to the redirect URLs. Google, Apple,
+  confirmation emails and password-reset emails all send members back here.
+- **Sign In / Providers → Email:** on by default. Keep "Confirm email" on.
+- **Sign In / Providers → Google:** create an OAuth client ID (type "Web
+  application") in Google Cloud Console, add
+  `https://<project-ref>.supabase.co/auth/v1/callback` as an authorized
+  redirect URI, then paste the client ID and secret into Supabase.
+- **Sign In / Providers → Apple:** needs a paid Apple Developer account. Create
+  a Services ID with Sign in with Apple, set its return URL to the same
+  callback, create a Sign in with Apple key, and enter the Services ID, team
+  ID, key ID and key in Supabase. Apple's secret expires every 6 months.
+- **Emails:** Supabase's built-in email sender is rate-limited and meant for
+  testing; set up custom SMTP before launch.
 
 ## Troubleshooting
 
