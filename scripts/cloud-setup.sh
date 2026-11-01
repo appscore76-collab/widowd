@@ -17,5 +17,12 @@ flutter config --no-analytics --enable-web >/dev/null
 flutter --version
 flutter precache --web
 
+# Supabase CLI, for migrations and Edge Functions (see docs/SETUP.md).
+if ! command -v supabase >/dev/null 2>&1; then
+  curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz \
+    | tar -xz -C /usr/local/bin supabase
+fi
+supabase --version
+
 cd widowd
 flutter pub get
