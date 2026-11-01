@@ -49,9 +49,7 @@ class MemberDetailPage extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [
-                      for (final r in reasons!) Chip(label: Text(r)),
-                    ],
+                    children: [for (final r in reasons!) Chip(label: Text(r))],
                   ),
                 ],
                 if (bio != null && bio.isNotEmpty) ...[

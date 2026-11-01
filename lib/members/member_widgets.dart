@@ -18,9 +18,8 @@ class MemberPhoto extends StatelessWidget {
       child: Center(
         child: Text(
           (member.displayName ?? '?').characters.first.toUpperCase(),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            color: scheme.onSecondaryContainer,
-          ),
+          style: Theme.of(context).textTheme.displaySmall
+              ?.copyWith(color: scheme.onSecondaryContainer),
         ),
       ),
     );
@@ -57,7 +56,10 @@ class VerificationBadges extends StatelessWidget {
       runSpacing: 6,
       children: [
         if (member.idVerified)
-          const _Badge(icon: Icons.verified_user_outlined, label: 'ID verified'),
+          const _Badge(
+            icon: Icons.verified_user_outlined,
+            label: 'ID verified',
+          ),
         if (member.photoVerified)
           const _Badge(icon: Icons.face_outlined, label: 'Photo verified'),
       ],
@@ -87,9 +89,8 @@ class _Badge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: scheme.onTertiaryContainer,
-            ),
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: scheme.onTertiaryContainer),
           ),
         ],
       ),
@@ -124,8 +125,7 @@ class MemberCard extends StatelessWidget {
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) =>
-                MemberDetailPage(member: member, reasons: reasons),
+            builder: (_) => MemberDetailPage(member: member, reasons: reasons),
           ),
         ),
         child: Column(

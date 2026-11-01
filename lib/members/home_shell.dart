@@ -83,9 +83,8 @@ class _HomeShellState extends State<HomeShell> {
             repository: widget.repository,
             initial: me,
             onSaved: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Profile saved')));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text('Profile saved')));
               _reloadProfile();
             },
           ),

@@ -8,6 +8,7 @@ environment fit together, and how to set each one up.
 | Path | What it is |
 | --- | --- |
 | `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now): landing page, sign-in, and the free member features (profile, browse, match suggestions) |
+| `assets/landing/`, `assets/fonts/` | Landing page screenshots and screen recordings (from the landing page design canvas), and Plus Jakarta Sans (SIL Open Font License, `assets/fonts/OFL.txt`) |
 | `supabase/migrations/` | Database schema, row-level security, the `profile-photos` bucket and the daily match-suggestion job |
 | `.github/workflows/deploy-web.yml` | Builds the web app and deploys it to Cloudflare Pages |
 | `supabase/functions/create-video-call/` | Edge Function: Daily video call token for two matched Plus members |
