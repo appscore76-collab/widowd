@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
 import 'members/members_repository.dart';
+import 'ui/app_theme.dart';
 
 // The publishable key is safe to ship in the app; row-level security decides
 // what each member can read and write. Defaults point at widowd-dev; build
@@ -38,15 +39,7 @@ class WidowdApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'widowd',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: const Color(0xFF5B6F8F)),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: .fromSeed(
-          seedColor: const Color(0xFF5B6F8F),
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: buildAppTheme(),
       home: AuthGate(
         auth: auth,
         repository:

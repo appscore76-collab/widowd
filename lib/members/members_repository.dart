@@ -19,11 +19,31 @@ abstract class MembersRepository {
   /// Best-effort removal of a photo the member no longer uses.
   Future<void> deletePhoto(String path);
 
-  /// Listed members other than the signed-in one, newest first.
-  Future<List<Member>> browse({int offset = 0, int limit = 24});
+  /// Listed members other than the signed-in one, newest first, optionally
+  /// narrowed to a keyword (name, town or about text) and badges.
+  Future<List<Member>> browse({
+    int offset = 0,
+    int limit = 24,
+    BrowseFilter filter = const BrowseFilter(),
+  });
 
   /// People the system suggested for the signed-in member, newest first.
   Future<List<Suggestion>> suggestions();
+}
+
+/// What the Search page narrows members down to.
+class BrowseFilter {
+  const BrowseFilter({
+    this.query = '',
+    this.photoVerified = false,
+    this.idVerified = false,
+  });
+
+  final String query;
+  final bool photoVerified;
+  final bool idVerified;
+
+  bool get isEmpty => query.trim().isEmpty && !photoVerified && !idVerified;
 }
 
 class SupabaseMembersRepository implements MembersRepository {
@@ -84,12 +104,31 @@ class SupabaseMembersRepository implements MembersRepository {
   }
 
   @override
-  Future<List<Member>> browse({int offset = 0, int limit = 24}) async {
-    final rows = await _client
+  Future<List<Member>> browse({
+    int offset = 0,
+    int limit = 24,
+    BrowseFilter filter = const BrowseFilter(),
+  }) async {
+    var query = _client
         .from('profiles')
         .select(Member.columns)
         .eq('listed', true)
-        .neq('id', currentUserId)
+        .neq('id', currentUserId);
+    if (filter.photoVerified) query = query.eq('photo_verified', true);
+    if (filter.idVerified) query = query.eq('id_verified', true);
+    // Keep only letters, digits, spaces and a few name characters, so the
+    // keyword can't break out of the PostgREST filter syntax.
+    final keyword = filter.query
+        .replaceAll(RegExp(r"[^\p{L}\p{N} '\-]", unicode: true), ' ')
+        .trim();
+    if (keyword.isNotEmpty) {
+      final pattern = '*$keyword*';
+      query = query.or(
+        'display_name.ilike."$pattern",city.ilike."$pattern",'
+        'bio.ilike."$pattern"',
+      );
+    }
+    final rows = await query
         .order('created_at', ascending: false)
         .range(offset, offset + limit - 1);
     return _withPhotoUrls(rows.map(Member.fromJson).toList());

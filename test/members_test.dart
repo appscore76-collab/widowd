@@ -7,7 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:widowd/members/home_shell.dart';
 import 'package:widowd/members/member.dart';
 import 'package:widowd/members/members_repository.dart';
-import 'package:widowd/members/profile_editor_page.dart';
+import 'package:widowd/ui/app_theme.dart';
+
+import 'test_fonts.dart';
 
 class FakeMembersRepository implements MembersRepository {
   FakeMembersRepository({
@@ -20,6 +22,7 @@ class FakeMembersRepository implements MembersRepository {
   final List<Member> members;
   final List<Suggestion> suggested;
   ProfileDraft? saved;
+  BrowseFilter? lastFilter;
 
   @override
   String get currentUserId => 'me';
@@ -40,8 +43,25 @@ class FakeMembersRepository implements MembersRepository {
   Future<void> deletePhoto(String path) async {}
 
   @override
-  Future<List<Member>> browse({int offset = 0, int limit = 24}) async =>
-      members.skip(offset).take(limit).toList();
+  Future<List<Member>> browse({
+    int offset = 0,
+    int limit = 24,
+    BrowseFilter filter = const BrowseFilter(),
+  }) async {
+    lastFilter = filter;
+    final q = filter.query.trim().toLowerCase();
+    return members
+        .where((m) => !filter.photoVerified || m.photoVerified)
+        .where((m) => !filter.idVerified || m.idVerified)
+        .where(
+          (m) =>
+              q.isEmpty ||
+              '${m.displayName} ${m.city} ${m.bio}'.toLowerCase().contains(q),
+        )
+        .skip(offset)
+        .take(limit)
+        .toList();
+  }
 
   @override
   Future<List<Suggestion>> suggestions() async => suggested;
@@ -76,151 +96,264 @@ const david = Member(
   gender: 'man',
   interestedIn: ['woman'],
   city: 'York',
+  photoVerified: true,
   listed: true,
 );
 
 void main() {
+  setUpAll(loadAppFonts);
+
   GoTrueClient newAuth() =>
       GoTrueClient(url: 'http://localhost/auth/v1', autoRefreshToken: false);
 
-  Future<void> pumpShell(WidgetTester tester, MembersRepository repo) async {
-    tester.view.physicalSize = const Size(1200, 2000);
+  Future<void> pumpShell(
+    WidgetTester tester,
+    MembersRepository repo, {
+    Size size = const Size(1200, 1600),
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
+        theme: buildAppTheme(),
         home: HomeShell(auth: newAuth(), repository: repo),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('A member without a complete profile is asked to create one', (
-    tester,
-  ) async {
-    await pumpShell(tester, FakeMembersRepository(me: const Member(id: 'me')));
+  Future<void> tapText(WidgetTester tester, String text) async {
+    await tester.ensureVisible(find.text(text).first);
+    await tester.tap(find.text(text).first);
+    await tester.pumpAndSettle();
+  }
 
-    expect(find.text('Create your profile'), findsOneWidget);
-    expect(find.text('Add a photo'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-  });
+  group('Onboarding', () {
+    testWidgets('starts at step 1 of 4 without the tabs', (tester) async {
+      await pumpShell(
+        tester,
+        FakeMembersRepository(me: const Member(id: 'me')),
+      );
 
-  testWidgets('The profile form requires a photo and the key details', (
-    tester,
-  ) async {
-    final repo = FakeMembersRepository(me: const Member(id: 'me'));
-    await pumpShell(tester, repo);
+      expect(find.text('Tell us about you'), findsOneWidget);
+      expect(find.text('1 of 4'), findsOneWidget);
+      expect(find.text('Discover'), findsNothing);
+    });
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Year of birth'),
-      '${DateTime.now().year - 10}',
-    );
-    await tester.tap(find.text('Save and continue'));
-    await tester.pump();
+    testWidgets('checks each step before moving on', (tester) async {
+      await pumpShell(
+        tester,
+        FakeMembersRepository(me: const Member(id: 'me')),
+      );
 
-    expect(find.text('Add a photo of yourself'), findsOneWidget);
-    expect(find.text('Enter your name'), findsOneWidget);
-    expect(find.text('You must be 18 or over to join'), findsOneWidget);
-    expect(find.text('Choose one'), findsOneWidget);
-    expect(find.text('Choose at least one'), findsOneWidget);
-    expect(repo.saved, isNull);
-  });
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Year of birth'),
+        '${DateTime.now().year - 10}',
+      );
+      await tapText(tester, 'Continue');
 
-  testWidgets('Saving keeps the existing photo and sends the details', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 2000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    var saved = false;
-    final repo = FakeMembersRepository();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ProfileEditorPage(
-            repository: repo,
-            initial: const Member(id: 'me', photoPath: 'me/old.jpg'),
-            onSaved: () => saved = true,
-          ),
+      expect(find.text('Enter your name'), findsOneWidget);
+      expect(find.text('You must be 18 or over to join'), findsOneWidget);
+      expect(find.text('1 of 4'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'First name'),
+        'Ann',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Year of birth'),
+        '1962',
+      );
+      await tapText(tester, 'Continue');
+      expect(find.text('Who are you hoping to meet?'), findsOneWidget);
+
+      await tapText(tester, 'Continue');
+      expect(find.text('Choose one'), findsOneWidget);
+      expect(find.text('Choose at least one'), findsOneWidget);
+      expect(find.text('2 of 4'), findsOneWidget);
+    });
+
+    testWidgets('walks through every step and saves', (tester) async {
+      final repo = FakeMembersRepository(
+        me: const Member(id: 'me', photoPath: 'me/old.jpg'),
+      );
+      await pumpShell(tester, repo);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'First name'),
+        ' Ann ',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Year of birth'),
+        '1962',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Town or city (optional)'),
+        'Leeds',
+      );
+      await tapText(tester, 'Continue');
+      await tapText(tester, 'Woman');
+      await tapText(tester, 'Men');
+      await tapText(tester, 'Continue');
+      expect(find.text('Share your story'), findsOneWidget);
+      await tester.enterText(find.byType(TextFormField), 'Hello there');
+      await tapText(tester, 'Continue');
+      expect(find.text('Add your photo'), findsOneWidget);
+
+      // Going back keeps what was typed.
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hello there'), findsOneWidget);
+      await tapText(tester, 'Continue');
+
+      await tapText(tester, 'Finish');
+
+      expect(repo.saved!.displayName, 'Ann');
+      expect(repo.saved!.birthYear, 1962);
+      expect(repo.saved!.city, 'Leeds');
+      expect(repo.saved!.gender, 'woman');
+      expect(repo.saved!.interestedIn, ['man']);
+      expect(repo.saved!.bio, 'Hello there');
+      expect(repo.saved!.photoPath, 'me/old.jpg');
+    });
+
+    testWidgets('asks for a photo on the last step', (tester) async {
+      final repo = FakeMembersRepository(
+        me: const Member(
+          id: 'me',
+          displayName: 'Ann',
+          birthYear: 1962,
+          gender: 'woman',
+          interestedIn: ['man'],
         ),
-      ),
-    );
+      );
+      await pumpShell(tester, repo);
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'First name'),
-      ' Ann ',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Year of birth'),
-      '1962',
-    );
-    await tester.tap(find.text('Woman'));
-    await tester.tap(find.text('Men'));
-    await tester.ensureVisible(find.text('Save changes'));
-    await tester.tap(find.text('Save changes'));
-    await tester.pumpAndSettle();
+      await tapText(tester, 'Continue');
+      await tapText(tester, 'Continue');
+      await tapText(tester, 'Continue');
+      await tapText(tester, 'Finish');
 
-    expect(saved, isTrue);
-    expect(repo.saved!.displayName, 'Ann');
-    expect(repo.saved!.birthYear, 1962);
-    expect(repo.saved!.gender, 'woman');
-    expect(repo.saved!.interestedIn, ['man']);
-    expect(repo.saved!.photoPath, 'me/old.jpg');
-    expect(repo.saved!.city, isNull);
+      expect(find.text('Add a photo of yourself'), findsOneWidget);
+      expect(repo.saved, isNull);
+    });
   });
 
-  testWidgets('Listed members see their system suggestions', (tester) async {
-    await pumpShell(
+  group('Signed-in app', () {
+    testWidgets('shows today’s suggestions and opens a profile', (
       tester,
-      FakeMembersRepository(
+    ) async {
+      await pumpShell(
+        tester,
+        FakeMembersRepository(
+          me: listedMe,
+          suggested: [
+            Suggestion(
+              matchId: 1,
+              member: robert,
+              status: 'suggested',
+              reasons: const ['Also lives in Leeds', 'ID verified'],
+              createdAt: DateTime(2026, 10, 31),
+            ),
+          ],
+        ),
+      );
+
+      final age = DateTime.now().year - 1959;
+      expect(find.text('Today’s suggestions'), findsOneWidget);
+      expect(find.text('Robert, $age'), findsOneWidget);
+      expect(find.text('Also lives in Leeds'), findsOneWidget);
+      expect(find.text('ID checked'), findsOneWidget);
+
+      await tapText(tester, 'Robert, $age');
+
+      expect(find.text('Why we suggested Robert'), findsOneWidget);
+      expect(
+        find.text('Retired teacher who loves walking the Dales.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('explains when there are no suggestions', (tester) async {
+      await pumpShell(tester, FakeMembersRepository(me: listedMe));
+
+      expect(find.text('No suggestions yet'), findsOneWidget);
+    });
+
+    testWidgets('search lists members and filters them', (tester) async {
+      final repo = FakeMembersRepository(
         me: listedMe,
-        suggested: [
-          Suggestion(
-            matchId: 1,
-            member: robert,
-            status: 'suggested',
-            reasons: const ['Also lives in Leeds', 'ID verified'],
-            createdAt: DateTime(2026, 10, 31),
+        members: const [robert, david],
+      );
+      await pumpShell(tester, repo);
+
+      await tapText(tester, 'Search');
+      expect(find.textContaining('Robert, '), findsOneWidget);
+      expect(find.textContaining('David, '), findsOneWidget);
+
+      await tapText(tester, 'Photo verified');
+      expect(repo.lastFilter!.photoVerified, isTrue);
+      expect(find.textContaining('Robert, '), findsNothing);
+      expect(find.textContaining('David, '), findsOneWidget);
+
+      await tapText(tester, 'Photo verified');
+      await tester.enterText(find.byType(TextField), 'leeds');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+      expect(repo.lastFilter!.query, 'leeds');
+      expect(find.textContaining('Robert, '), findsOneWidget);
+      expect(find.textContaining('David, '), findsNothing);
+    });
+
+    testWidgets('Me shows the profile editor and saves', (tester) async {
+      final repo = FakeMembersRepository(me: listedMe);
+      // Tall enough that typing doesn't scroll the save button away.
+      await pumpShell(tester, repo, size: const Size(1200, 2400));
+
+      await tapText(tester, 'Me');
+      expect(find.text('My profile'), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Town or city (optional)'),
+        'York',
+      );
+      await tapText(tester, 'Save changes');
+
+      expect(repo.saved!.city, 'York');
+      expect(repo.saved!.displayName, 'Ann');
+    });
+
+    for (final (name, size) in [
+      ('phone', const Size(390, 844)),
+      ('desktop', const Size(1440, 900)),
+    ]) {
+      testWidgets('lays out without overflow on $name', (tester) async {
+        await pumpShell(
+          tester,
+          FakeMembersRepository(
+            me: listedMe,
+            members: const [robert, david],
+            suggested: [
+              Suggestion(
+                matchId: 1,
+                member: robert,
+                status: 'suggested',
+                reasons: const ['Also lives in Leeds', 'Close to you in age'],
+                createdAt: DateTime(2026, 10, 31),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-
-    final age = DateTime.now().year - 1959;
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Robert, $age'), findsOneWidget);
-    expect(find.text('Also lives in Leeds'), findsOneWidget);
-    expect(find.text('ID verified'), findsOneWidget);
-
-    await tester.tap(find.text('Robert, $age'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Why we suggested'), findsOneWidget);
-    expect(
-      find.text('Retired teacher who loves walking the Dales.'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('Shows a friendly message when there are no suggestions', (
-    tester,
-  ) async {
-    await pumpShell(tester, FakeMembersRepository(me: listedMe));
-
-    expect(find.text('No suggestions yet'), findsOneWidget);
-  });
-
-  testWidgets('Browse lists other members', (tester) async {
-    await pumpShell(
-      tester,
-      FakeMembersRepository(me: listedMe, members: const [robert, david]),
-    );
-
-    await tester.tap(find.text('Browse'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('Robert, '), findsOneWidget);
-    expect(find.textContaining('David, '), findsOneWidget);
-    expect(find.text('York'), findsOneWidget);
+          size: size,
+        );
+        expect(tester.takeException(), isNull);
+        await tapText(tester, 'Search');
+        expect(tester.takeException(), isNull);
+        await tapText(tester, 'Me');
+        expect(tester.takeException(), isNull);
+        await tapText(tester, 'Discover');
+        await tapText(tester, 'Robert, ${DateTime.now().year - 1959}');
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }

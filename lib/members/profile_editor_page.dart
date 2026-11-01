@@ -3,13 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../landing/landing_style.dart';
+import '../ui/app_theme.dart';
+import '../ui/app_widgets.dart';
 import 'member.dart';
 import 'members_repository.dart';
 
 /// Creates or edits the signed-in member's profile.
 ///
-/// While [onboarding], the page explains that a complete profile is needed
-/// before the member can browse and get suggestions.
+/// While [onboarding], the profile is filled in over four steps, like the
+/// app design's onboarding screens. Otherwise everything is on one page.
 class ProfileEditorPage extends StatefulWidget {
   const ProfileEditorPage({
     super.key,
@@ -33,6 +36,7 @@ class ProfileEditorPage extends StatefulWidget {
 class _ProfileEditorPageState extends State<ProfileEditorPage> {
   static const _maxPhotoBytes = 2 * 1024 * 1024;
   static const _minAge = 18;
+  static const _steps = 4;
 
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.initial?.displayName);
@@ -44,6 +48,7 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
   late String? _gender = widget.initial?.gender;
   late final Set<String> _interestedIn = {...?widget.initial?.interestedIn};
 
+  int _step = 1;
   Uint8List? _newPhoto;
   String? _newPhotoType;
   bool _busy = false;
@@ -93,12 +98,43 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
     return null;
   }
 
-  Future<void> _save() async {
+  /// Checks the current onboarding step and moves on, saving after the last.
+  void _continue() {
+    setState(() => _triedSubmit = true);
+    final ok = switch (_step) {
+      1 => _formKey.currentState!.validate(),
+      2 => _gender != null && _interestedIn.isNotEmpty,
+      3 => _formKey.currentState!.validate(),
+      _ => _hasPhoto,
+    };
+    if (!ok) return;
+    if (_step < _steps) {
+      setState(() {
+        _step++;
+        _triedSubmit = false;
+        _error = null;
+      });
+    } else {
+      _save();
+    }
+  }
+
+  void _back() => setState(() {
+    _step--;
+    _triedSubmit = false;
+    _error = null;
+  });
+
+  Future<void> _saveAll() async {
     setState(() => _triedSubmit = true);
     final formOk = _formKey.currentState!.validate();
     if (!formOk || !_hasPhoto || _gender == null || _interestedIn.isEmpty) {
       return;
     }
+    await _save();
+  }
+
+  Future<void> _save() async {
     setState(() {
       _busy = true;
       _error = null;
@@ -152,151 +188,388 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
     return null;
   }
 
+  // Fields --------------------------------------------------------------
+
+  Widget _nameField() => TextFormField(
+    controller: _name,
+    decoration: const InputDecoration(
+      labelText: 'First name',
+      helperText: 'Shown to other members',
+    ),
+    maxLength: 40,
+    textCapitalization: TextCapitalization.words,
+    autofillHints: const [AutofillHints.givenName],
+    validator: (v) => (v?.trim().isEmpty ?? true) ? 'Enter your name' : null,
+  );
+
+  Widget _birthYearField() => TextFormField(
+    controller: _birthYear,
+    decoration: const InputDecoration(
+      labelText: 'Year of birth',
+      helperText: 'Only your age is shown',
+    ),
+    keyboardType: TextInputType.number,
+    validator: _validateBirthYear,
+  );
+
+  Widget _cityField() => TextFormField(
+    controller: _city,
+    decoration: const InputDecoration(
+      labelText: 'Town or city (optional)',
+      helperText: 'Helps us suggest people near you',
+    ),
+    maxLength: 80,
+    textCapitalization: TextCapitalization.words,
+    autofillHints: const [AutofillHints.addressCity],
+  );
+
+  Widget _bioField() => TextFormField(
+    controller: _bio,
+    decoration: const InputDecoration(
+      labelText: 'About me (optional)',
+      hintText:
+          'What you’re ready for now, how you spend a Sunday, your family…',
+      alignLabelWithHint: true,
+    ),
+    minLines: 5,
+    maxLines: 10,
+    maxLength: 1000,
+    textCapitalization: TextCapitalization.sentences,
+  );
+
+  Widget _genderChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      for (final g in genders) ...[
+        ChoiceCard(
+          label: genderLabel(g),
+          selected: _gender == g,
+          onTap: () => setState(() => _gender = g),
+        ),
+        const SizedBox(height: 10),
+      ],
+      _InlineError(_triedSubmit && _gender == null ? 'Choose one' : null),
+    ],
+  );
+
+  Widget _interestChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      for (final g in genders) ...[
+        ChoiceCard(
+          label: genderPluralLabel(g),
+          multiple: true,
+          selected: _interestedIn.contains(g),
+          onTap: () => setState(
+            () => _interestedIn.contains(g)
+                ? _interestedIn.remove(g)
+                : _interestedIn.add(g),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+      _InlineError(
+        _triedSubmit && _interestedIn.isEmpty ? 'Choose at least one' : null,
+      ),
+    ],
+  );
+
+  Widget _photoTile({double size = 160}) {
+    final ImageProvider? image = _newPhoto != null
+        ? MemoryImage(_newPhoto!)
+        : widget.initial?.photoUrl != null
+        ? NetworkImage(widget.initial!.photoUrl!)
+        : null;
+    return Semantics(
+      button: true,
+      label: _hasPhoto ? 'Change photo' : 'Add a photo',
+      child: InkWell(
+        onTap: _busy ? null : _pickPhoto,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: size,
+          height: size * 1.25,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: image == null && !_hasPhoto
+                ? Colors.white
+                : AppColors.photoTint,
+            borderRadius: BorderRadius.circular(20),
+            border: image == null && !_hasPhoto
+                ? Border.all(color: AppColors.border, width: 2)
+                : null,
+            image: image == null
+                ? null
+                : DecorationImage(image: image, fit: BoxFit.cover),
+          ),
+          child: image == null && _hasPhoto
+              ? const Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(
+                      color: AppColors.photoTint,
+                      child: Icon(
+                        Icons.person_outline_rounded,
+                        size: 64,
+                        color: AppColors.photoIcon,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Tag(
+                          'Change',
+                          background: AppColors.ink,
+                          color: Colors.white,
+                          icon: Icons.photo_camera_outlined,
+                          size: 11,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : image == null
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.add_rounded,
+                      size: 30,
+                      color: AppColors.teal,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add a photo',
+                      style: jakarta(14, weight: 700, color: AppColors.teal),
+                    ),
+                  ],
+                )
+              : Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Tag(
+                      'Change',
+                      background: AppColors.ink,
+                      color: Colors.white,
+                      icon: Icons.photo_camera_outlined,
+                      size: 11,
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _primaryButton(String label, VoidCallback onPressed) => FilledButton(
+    onPressed: _busy ? null : onPressed,
+    child: _busy
+        ? const SizedBox.square(
+            dimension: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              color: Colors.white,
+            ),
+          )
+        : Text(label),
+  );
+
+  // Layouts -------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    return widget.onboarding ? _buildOnboarding() : _buildEditor();
+  }
+
+  Widget _buildOnboarding() {
+    final (
+      String title,
+      String subtitle,
+      List<Widget> fields,
+    ) = switch (_step) {
+      1 => (
+        'Tell us about you',
+        'Just the basics. Only your first name, age and town are shown to '
+            'other members.',
+        [
+          _nameField(),
+          const SizedBox(height: 12),
+          _birthYearField(),
+          const SizedBox(height: 12),
+          _cityField(),
+        ],
+      ),
+      2 => (
+        'Who are you hoping to meet?',
+        'This shapes who we suggest. You can change it any time.',
+        [
+          Text('I am', style: jakarta(15, weight: 700)),
+          const SizedBox(height: 10),
+          _genderChoices(),
+          const SizedBox(height: 14),
+          Text('Interested in', style: jakarta(15, weight: 700)),
+          const SizedBox(height: 10),
+          _interestChoices(),
+        ],
+      ),
+      3 => (
+        'Share your story',
+        'People like you for your words, values and story first. Write as '
+            'much or as little as you like.',
+        [_bioField()],
+      ),
+      _ => (
+        'Add your photo',
+        'Add a clear photo of yourself. Once your profile is complete, '
+            'members can see it on your profile.',
+        [
+          Center(child: _photoTile(size: 180)),
+          _InlineError(
+            _triedSubmit && !_hasPhoto ? 'Add a photo of yourself' : null,
+            center: true,
+          ),
+          const SizedBox(height: 20),
+          for (final (icon, text) in const [
+            (
+              Icons.favorite_border_rounded,
+              'We’ll start suggesting people for you as soon as you finish.',
+            ),
+            (
+              Icons.lock_outline_rounded,
+              'Only signed-in members can see your photo.',
+            ),
+          ])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, size: 20, color: AppColors.teal),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(text, style: jakarta(14, height: 1.45))),
+                ],
+              ),
+            ),
+        ],
+      ),
+    };
+
+    return ColoredBox(
+      color: Colors.white,
+      child: Form(
+        key: _formKey,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 24, 0),
+                  child: StepHeader(
+                    step: _step,
+                    total: _steps,
+                    onBack: _step > 1 && !_busy ? _back : null,
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                    children: [
+                      ScreenTitle(title, subtitle: subtitle),
+                      const SizedBox(height: 22),
+                      // A key per step so each step's fields start fresh.
+                      KeyedSubtree(
+                        key: ValueKey(_step),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: fields,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_error != null) ...[
+                        FormMessage(_error!),
+                        const SizedBox(height: 12),
+                      ],
+                      _primaryButton(
+                        _step < _steps ? 'Continue' : 'Finish',
+                        _continue,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditor() {
+    Widget section(String title, List<Widget> children) => Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: AppCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(title, style: jakarta(17, weight: 800)),
+            const SizedBox(height: 14),
+            ...children,
+          ],
+        ),
+      ),
+    );
 
     return Form(
       key: _formKey,
       child: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         children: [
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints: const BoxConstraints(maxWidth: 620),
               child: Column(
-                crossAxisAlignment: .stretch,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (widget.onboarding) ...[
-                    Text(
-                      'Create your profile',
-                      style: theme.textTheme.headlineSmall,
+                  const ScreenTitle(
+                    'My profile',
+                    subtitle: 'This is what other members see.',
+                  ),
+                  const SizedBox(height: 20),
+                  section('Photo', [
+                    Center(child: _photoTile()),
+                    _InlineError(
+                      _triedSubmit && !_hasPhoto
+                          ? 'Add a photo of yourself'
+                          : null,
+                      center: true,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Add a photo and a few details. Once your profile is '
-                      'complete you can browse members and we will start '
-                      'suggesting people for you.',
-                    ),
-                    const SizedBox(height: 24),
+                  ]),
+                  section('About you', [
+                    _nameField(),
+                    const SizedBox(height: 12),
+                    _birthYearField(),
+                    const SizedBox(height: 12),
+                    _cityField(),
+                  ]),
+                  section('I am', [_genderChoices()]),
+                  section('Interested in', [_interestChoices()]),
+                  section('Your story', [_bioField()]),
+                  if (_error != null) ...[
+                    FormMessage(_error!),
+                    const SizedBox(height: 12),
                   ],
-                  Center(child: _photoPicker(scheme)),
-                  _InlineError(
-                    _triedSubmit && !_hasPhoto
-                        ? 'Add a photo of yourself'
-                        : null,
-                    center: true,
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _name,
-                    decoration: const InputDecoration(
-                      labelText: 'First name',
-                      helperText: 'Shown to other members',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLength: 40,
-                    textCapitalization: .words,
-                    autofillHints: const [AutofillHints.givenName],
-                    validator: (v) =>
-                        (v?.trim().isEmpty ?? true) ? 'Enter your name' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _birthYear,
-                    decoration: const InputDecoration(
-                      labelText: 'Year of birth',
-                      helperText: 'Only your age is shown',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: _validateBirthYear,
-                  ),
-                  const SizedBox(height: 20),
-                  Text('I am', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final g in genders)
-                        ChoiceChip(
-                          label: Text(genderLabel(g)),
-                          selected: _gender == g,
-                          onSelected: (_) => setState(() => _gender = g),
-                        ),
-                    ],
-                  ),
-                  _InlineError(
-                    _triedSubmit && _gender == null ? 'Choose one' : null,
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Interested in', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final g in genders)
-                        FilterChip(
-                          label: Text(genderPluralLabel(g)),
-                          selected: _interestedIn.contains(g),
-                          onSelected: (on) => setState(
-                            () => on
-                                ? _interestedIn.add(g)
-                                : _interestedIn.remove(g),
-                          ),
-                        ),
-                    ],
-                  ),
-                  _InlineError(
-                    _triedSubmit && _interestedIn.isEmpty
-                        ? 'Choose at least one'
-                        : null,
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _city,
-                    decoration: const InputDecoration(
-                      labelText: 'Town or city (optional)',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLength: 80,
-                    textCapitalization: .words,
-                    autofillHints: const [AutofillHints.addressCity],
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _bio,
-                    decoration: const InputDecoration(
-                      labelText: 'About you (optional)',
-                      hintText:
-                          'What you enjoy, what you are looking for, '
-                          'anything you would like people to know',
-                      border: OutlineInputBorder(),
-                      alignLabelWithHint: true,
-                    ),
-                    minLines: 4,
-                    maxLines: 8,
-                    maxLength: 1000,
-                    textCapitalization: .sentences,
-                  ),
-                  _InlineError(_error),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: _busy ? null : _save,
-                    child: _busy
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            widget.onboarding
-                                ? 'Save and continue'
-                                : 'Save changes',
-                          ),
-                  ),
+                  _primaryButton('Save changes', _saveAll),
                 ],
               ),
             ),
@@ -305,37 +578,9 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
       ),
     );
   }
-
-  Widget _photoPicker(ColorScheme scheme) {
-    final ImageProvider? image = _newPhoto != null
-        ? MemoryImage(_newPhoto!)
-        : widget.initial?.photoUrl != null
-        ? NetworkImage(widget.initial!.photoUrl!)
-        : null;
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 64,
-          backgroundColor: scheme.secondaryContainer,
-          foregroundImage: image,
-          child: Icon(
-            Icons.person_outline,
-            size: 56,
-            color: scheme.onSecondaryContainer,
-          ),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _pickPhoto,
-          icon: const Icon(Icons.photo_camera_outlined),
-          label: Text(_hasPhoto ? 'Change photo' : 'Add a photo'),
-        ),
-      ],
-    );
-  }
 }
 
-/// A validation message under a field.
+/// A validation message under a group of choices.
 ///
 /// It stays in the widget tree even with no message, so the fields after it
 /// keep their state (and their own error messages) when it appears.
@@ -347,16 +592,13 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.only(top: message == null ? 0 : 6),
       child: message == null
           ? const SizedBox(width: double.infinity)
           : Text(
               message!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.error,
-              ),
+              style: jakarta(13, weight: 600, color: AppColors.error),
               textAlign: center ? TextAlign.center : TextAlign.start,
             ),
     );

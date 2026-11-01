@@ -59,7 +59,7 @@ void main() {
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(find.text('Continue with Apple'), findsOneWidget);
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.byTooltip('Back'));
     await tester.pump();
 
     expect(find.textContaining('Love again,'), findsOneWidget);

@@ -2,6 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../landing/landing_style.dart';
+import '../ui/app_theme.dart';
+import '../ui/app_widgets.dart';
+import '../ui/welcome_layout.dart';
+
 /// Where Supabase sends members back to after Google, Apple, a confirmation
 /// email or a password-reset email. On the web that's whichever site is
 /// running (widowd.pages.dev, a preview deploy or localhost), and each one
@@ -121,145 +126,170 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     final signingUp = _mode == _Mode.signUp;
-    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: widget.onBack == null
-          ? null
-          : AppBar(
-              leading: BackButton(onPressed: widget.onBack),
-              title: const Text('widowd'),
-            ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Form(
-              key: _formKey,
-              child: AutofillGroup(
-                child: Column(
-                  crossAxisAlignment: .stretch,
-                  children: [
-                    Text(
-                      signingUp ? 'Create your account' : 'Sign in to widowd',
-                      style: theme.textTheme.headlineSmall,
-                      textAlign: .center,
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton.tonalIcon(
-                      onPressed: _busy
-                          ? null
-                          : () => _oauth(OAuthProvider.google),
-                      icon: const Icon(Icons.g_mobiledata, size: 28),
-                      label: const Text('Continue with Google'),
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.tonalIcon(
-                      onPressed: _busy
-                          ? null
-                          : () => _oauth(OAuthProvider.apple),
-                      icon: const Icon(Icons.apple),
-                      label: const Text('Continue with Apple'),
-                    ),
-                    const SizedBox(height: 24),
-                    const Row(
-                      children: [
-                        Expanded(child: Divider()),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('or'),
-                        ),
-                        Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: _email,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      textInputAction: TextInputAction.next,
-                      validator: (value) => _isEmail(value?.trim() ?? '')
-                          ? null
-                          : 'Enter a valid email address',
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _password,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                      ),
-                      obscureText: true,
-                      autofillHints: [
-                        signingUp
-                            ? AutofillHints.newPassword
-                            : AutofillHints.password,
-                      ],
-                      onFieldSubmitted: (_) => _busy ? null : _submit(),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Enter your password';
-                        }
-                        if (signingUp && value.length < 8) {
-                          return 'Use at least 8 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    if (!signingUp)
-                      Align(
-                        alignment: .centerRight,
-                        child: TextButton(
-                          onPressed: _busy ? null : _forgotPassword,
-                          child: const Text('Forgot password?'),
-                        ),
-                      )
-                    else
-                      const SizedBox(height: 12),
-                    if (_error != null) ...[
-                      Text(
-                        _error!,
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (_notice != null) ...[
-                      Text(_notice!),
-                      const SizedBox(height: 12),
-                    ],
-                    FilledButton(
-                      onPressed: _busy ? null : _submit,
-                      child: _busy
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(signingUp ? 'Create account' : 'Sign in'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: _busy
-                          ? null
-                          : () => setState(() {
-                              _mode = signingUp ? _Mode.signIn : _Mode.signUp;
-                              _error = null;
-                              _notice = null;
-                            }),
-                      child: Text(
-                        signingUp
-                            ? 'Already have an account? Sign in'
-                            : 'New to widowd? Create an account',
-                      ),
-                    ),
-                  ],
+    return WelcomeLayout(
+      onBack: widget.onBack,
+      child: Form(
+        key: _formKey,
+        child: AutofillGroup(
+          child: Column(
+            crossAxisAlignment: .stretch,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  signingUp ? 'Create your account' : 'Sign in to widowd',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: .center,
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              _ProviderButton(
+                onPressed: _busy ? null : () => _oauth(OAuthProvider.google),
+                icon: Icons.g_mobiledata_rounded,
+                label: 'Continue with Google',
+              ),
+              const SizedBox(height: 12),
+              _ProviderButton(
+                onPressed: _busy ? null : () => _oauth(OAuthProvider.apple),
+                icon: Icons.apple,
+                label: 'Continue with Apple',
+                dark: true,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'or with email',
+                      style: jakarta(13, weight: 600, color: AppColors.muted),
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _email,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.next,
+                validator: (value) => _isEmail(value?.trim() ?? '')
+                    ? null
+                    : 'Enter a valid email address',
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _password,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                autofillHints: [
+                  signingUp
+                      ? AutofillHints.newPassword
+                      : AutofillHints.password,
+                ],
+                onFieldSubmitted: (_) => _busy ? null : _submit(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Enter your password';
+                  }
+                  if (signingUp && value.length < 8) {
+                    return 'Use at least 8 characters';
+                  }
+                  return null;
+                },
+              ),
+              if (!signingUp)
+                Align(
+                  alignment: .centerRight,
+                  child: TextButton(
+                    onPressed: _busy ? null : _forgotPassword,
+                    child: const Text('Forgot password?'),
+                  ),
+                )
+              else
+                const SizedBox(height: 16),
+              if (_error != null) ...[
+                FormMessage(_error!),
+                const SizedBox(height: 12),
+              ],
+              if (_notice != null) ...[
+                FormMessage(_notice!, isError: false),
+                const SizedBox(height: 12),
+              ],
+              FilledButton(
+                onPressed: _busy ? null : _submit,
+                child: _busy
+                    ? const SizedBox.square(
+                        dimension: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(signingUp ? 'Create account' : 'Sign in'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _busy
+                    ? null
+                    : () => setState(() {
+                        _mode = signingUp ? _Mode.signIn : _Mode.signUp;
+                        _error = null;
+                        _notice = null;
+                      }),
+                child: Text(
+                  signingUp
+                      ? 'Already have an account? Sign in'
+                      : 'New to widowd? Create an account',
+                  style: jakarta(
+                    15,
+                    weight: 600,
+                    color: AppColors.teal,
+                  ).copyWith(decoration: TextDecoration.underline),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Continue with Google" (white) and "Continue with Apple" (black).
+class _ProviderButton extends StatelessWidget {
+  const _ProviderButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    this.dark = false,
+  });
+
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String label;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = dark ? Colors.white : AppColors.ink;
+    return SizedBox(
+      height: 56,
+      child: TextButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: dark ? 22 : 30, color: fg),
+        label: Text(label, style: jakarta(17, weight: 600, color: fg)),
+        style: TextButton.styleFrom(
+          backgroundColor: dark ? Colors.black : Colors.white,
+          foregroundColor: fg,
+          shape: StadiumBorder(
+            side: dark
+                ? BorderSide.none
+                : const BorderSide(color: AppColors.border),
           ),
         ),
       ),
