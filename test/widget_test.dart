@@ -18,7 +18,7 @@ void main() {
     tester.view.physicalSize = const Size(1280, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(WidowdApp(auth: newAuth()));
+    await tester.pumpWidget(WidowdApp(auth: newAuth(), landingVideos: false));
   }
 
   testWidgets('Signed-out visitors see the landing page', (tester) async {

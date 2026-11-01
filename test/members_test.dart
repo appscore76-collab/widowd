@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:widowd/members/home_shell.dart';
+import 'package:go_router/go_router.dart';
+import 'package:widowd/app/providers.dart';
+import 'package:widowd/main.dart';
 import 'package:widowd/members/member.dart';
 import 'package:widowd/members/members_repository.dart';
-import 'package:widowd/ui/app_theme.dart';
 
 import 'test_fonts.dart';
 
@@ -29,6 +30,14 @@ class FakeMembersRepository implements MembersRepository {
 
   @override
   Future<Member?> myProfile() async => me;
+
+  @override
+  Future<Member?> member(String id) async {
+    for (final m in members) {
+      if (m.id == id) return m;
+    }
+    return null;
+  }
 
   @override
   Future<void> saveProfile(ProfileDraft draft) async => saved = draft;
@@ -115,13 +124,22 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildAppTheme(),
-        home: HomeShell(auth: newAuth(), repository: repo),
+      WidowdApp(
+        auth: newAuth(),
+        repository: () => repo,
+        session: AuthSession.fixed(userId: 'me'),
+        landingVideos: false,
       ),
     );
     await tester.pumpAndSettle();
   }
+
+  String currentPath(WidgetTester tester) =>
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .routerDelegate
+          .currentConfiguration
+          .uri
+          .path;
 
   Future<void> tapText(WidgetTester tester, String text) async {
     await tester.ensureVisible(find.text(text).first);
@@ -355,5 +373,69 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+  });
+
+  group('Routing', () {
+    testWidgets('signed-in members land on /app/discover', (tester) async {
+      await pumpShell(tester, FakeMembersRepository(me: listedMe));
+
+      expect(currentPath(tester), '/app/discover');
+      await tapText(tester, 'Search');
+      expect(currentPath(tester), '/app/search');
+      await tapText(tester, 'Me');
+      expect(currentPath(tester), '/app/me');
+    });
+
+    testWidgets('signed-out visitors are sent from /app to sign in', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        WidowdApp(
+          auth: newAuth(),
+          repository: FakeMembersRepository.new,
+          session: AuthSession.fixed(),
+          landingVideos: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .go('/app/search');
+      await tester.pumpAndSettle();
+
+      expect(currentPath(tester), '/sign-in');
+      expect(find.text('Sign in to widowd'), findsOneWidget);
+    });
+
+    testWidgets('a profile link loads the member by id', (tester) async {
+      await pumpShell(
+        tester,
+        FakeMembersRepository(me: listedMe, members: const [robert]),
+      );
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .go('/app/members/robert');
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Retired teacher who loves walking the Dales.'),
+        findsOneWidget,
+      );
+
+      // With nothing to go back to, Back returns to Discover.
+      await tester.tap(find.text('Back'));
+      await tester.pumpAndSettle();
+      expect(currentPath(tester), '/app/discover');
+    });
+
+    testWidgets('an unknown profile link explains itself', (tester) async {
+      await pumpShell(tester, FakeMembersRepository(me: listedMe));
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .go('/app/members/nobody');
+      await tester.pumpAndSettle();
+
+      expect(find.text('This profile isn’t available'), findsOneWidget);
+    });
   });
 }

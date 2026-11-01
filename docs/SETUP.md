@@ -7,10 +7,13 @@ environment fit together, and how to set each one up.
 
 | Path | What it is |
 | --- | --- |
-| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now): landing page, sign-in, and the free member features (profile, browse, match suggestions) |
+| `lib/`, `test/`, `web/`, `pubspec.yaml` | The Flutter app (web only for now): landing page, sign-in, and the free member features (profile, browse, match suggestions). Routes in `lib/app/router.dart`, shared state in `lib/app/providers.dart` |
 | `assets/landing/`, `assets/fonts/` | Landing page screenshots and screen recordings (from the landing page design canvas), and Plus Jakarta Sans (SIL Open Font License, `assets/fonts/OFL.txt`) |
+| `supabase/config.toml` | Supabase CLI settings: Edge Function JWT checks and auth redirect URLs |
 | `supabase/migrations/` | Database schema, row-level security, the `profile-photos` bucket and the daily match-suggestion job |
 | `.github/workflows/deploy-web.yml` | Builds the web app and deploys it to Cloudflare Pages |
+| `.github/workflows/deploy-supabase-dev.yml` | Pushes migrations and Edge Functions to `widowd-dev` |
+| `docs/ROADMAP.md` | What's left to build the full mobile and web app on dev, and in what order |
 | `supabase/functions/create-video-call/` | Edge Function: Daily video call token for two matched Plus members |
 | `supabase/functions/start-verification/` | Edge Function: starts a Didit ID or photo verification |
 | `supabase/functions/didit-webhook/` | Edge Function: receives Didit results and sets badges |
@@ -37,6 +40,18 @@ approve the install.
 | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | A Cloudflare API token with the **Cloudflare Pages: Edit** permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+| `SUPABASE_ACCESS_TOKEN` | A Supabase personal access token (Account > Access Tokens), used by `deploy-supabase-dev.yml` |
+| `SUPABASE_DEV_DB_PASSWORD` | The `widowd-dev` database password (Project Settings > Database) |
+
+And this **variable** on the **Variables** tab (it isn't secret; a DSN ships
+inside the app):
+
+| Variable | Value |
+| --- | --- |
+| `SENTRY_DSN` | The DSN of a Sentry project for the web app. Without it, error reporting is off |
+
+Until the two Supabase secrets are added, `deploy-supabase-dev.yml` skips with
+a warning.
 
 ## 2. Cloudflare Pages
 
@@ -106,6 +121,19 @@ flutter build web --release
 flutter run -d chrome
 ```
 
+Build-time settings, each passed as `--dart-define=NAME=value`:
+
+| Name | Default | What it does |
+| --- | --- | --- |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | `widowd-dev` | Which Supabase project the app talks to |
+| `SENTRY_DSN` | empty (off) | Turns on error reporting to Sentry |
+| `APP_ENV` | `dev` | Environment name reported to Sentry (`deploy-web.yml` sets `production` for `main`) |
+
+Pages have their own web addresses: `/`, `/sign-in`, `/join`,
+`/reset-password`, `/app/discover`, `/app/search`, `/app/me` and
+`/app/members/<id>`. Cloudflare Pages sends any address to the app (there's no
+`404.html`), so refreshing or sharing a link works.
+
 Only the web platform is set up. `flutter doctor` will report the Android
 toolchain and Linux desktop libraries as missing in the cloud container; neither
 is needed for web work.
@@ -117,17 +145,22 @@ is needed for web work.
 | `widowd-dev` | `gzgrbbeohcerznezawna` |
 | `widowd-staging` | `dhpjlwicmtszknhefwfr` |
 
-**Database schema.** `supabase/migrations/` holds the schema. It has been
-applied to `widowd-dev`; apply it to `widowd-staging` (and any new project)
-with:
+**Database schema.** `supabase/migrations/` holds the schema, and it's
+applied to `widowd-dev`. Changes reach `widowd-dev` through
+`deploy-supabase-dev.yml`, on pushes to `main` that touch `supabase/` or
+when run by hand from the Actions tab. `widowd-staging` is empty and isn't
+used yet. To apply the schema by hand:
 
 ```bash
-supabase link --project-ref dhpjlwicmtszknhefwfr
+supabase link --project-ref gzgrbbeohcerznezawna
 ```
 
 ```bash
 supabase db push
 ```
+
+Migration file names must match the versions recorded in the project
+(`supabase migration list`), or `db push` tries to run them again.
 
 What it creates:
 
@@ -164,8 +197,11 @@ supabase secrets set DAILY_API_KEY=... DAILY_DOMAIN=... --project-ref gzgrbbeohc
 supabase secrets set DIDIT_API_KEY=... DIDIT_WORKFLOW_ID_IDCHECK=... DIDIT_WORKFLOW_ID_PHOTO=... DIDIT_WEBHOOK_SECRET=... --project-ref gzgrbbeohcerznezawna
 ```
 
-**Deploy the functions.** `didit-webhook` needs JWT verification off because
-Didit doesn't send a Supabase token; it checks Didit's signature instead.
+**Deploy the functions.** All three are deployed to `widowd-dev`; until the
+secrets above are set they answer `not_configured`. `deploy-supabase-dev.yml`
+redeploys them, using the JWT settings in `supabase/config.toml`. By hand:
+`didit-webhook` needs JWT verification off because Didit doesn't send a
+Supabase token; it checks Didit's signature instead.
 
 ```bash
 supabase functions deploy create-video-call --project-ref gzgrbbeohcerznezawna

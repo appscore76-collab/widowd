@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
+import '../app/providers.dart';
 import '../ui/app_widgets.dart';
-import 'browse_page.dart';
-import 'member.dart';
 import 'member_widgets.dart';
-import 'members_repository.dart';
 import 'profile_editor_page.dart';
-import 'suggestions_page.dart';
 
 /// The signed-in app: profile setup first, then Discover, Search and Me.
 ///
 /// Phones get the design's bottom tab bar; wider screens get the tabs in a
-/// top bar, like the landing page header.
-class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.auth, required this.repository});
+/// top bar, like the landing page header. Each tab is a route
+/// (/app/discover, /app/search, /app/me) that keeps its state.
+class HomeShell extends ConsumerStatefulWidget {
+  const HomeShell({super.key, required this.navigationShell});
 
-  final GoTrueClient auth;
-  final MembersRepository repository;
+  final StatefulNavigationShell navigationShell;
 
   @override
-  State<HomeShell> createState() => _HomeShellState();
+  ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
-  late Future<Member?> _profile = widget.repository.myProfile();
-  int _tab = 0;
+class _HomeShellState extends ConsumerState<HomeShell> {
+  int get _tab => widget.navigationShell.currentIndex;
+
+  void _goTab(int index) => widget.navigationShell.goBranch(
+    index,
+    // Tapping the current tab again returns it to its first page.
+    initialLocation: index == _tab,
+  );
 
   static const _tabs = [
     (Icons.favorite_border_rounded, Icons.favorite_rounded, 'Discover'),
@@ -35,11 +38,10 @@ class _HomeShellState extends State<HomeShell> {
     (Icons.person_outline_rounded, Icons.person_rounded, 'Me'),
   ];
 
-  void _reloadProfile() =>
-      setState(() => _profile = widget.repository.myProfile());
+  void _reloadProfile() => ref.invalidate(myProfileProvider);
 
   Widget _signOutButton() => TextButton(
-    onPressed: widget.auth.signOut,
+    onPressed: () => ref.read(authClientProvider).signOut(),
     style: TextButton.styleFrom(foregroundColor: AppColors.ink),
     child: Text('Sign out', style: jakarta(14, weight: 700)),
   );
@@ -79,7 +81,7 @@ class _HomeShellState extends State<HomeShell> {
                           icon: i == _tab ? selectedIcon : icon,
                           label: label,
                           selected: i == _tab,
-                          onTap: () => setState(() => _tab = i),
+                          onTap: () => _goTab(i),
                         ),
                       ),
                   const Spacer(),
@@ -96,91 +98,77 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= 900;
-    return FutureBuilder<Member?>(
-      future: _profile,
-      builder: (context, snapshot) {
-        final loaded = snapshot.connectionState == ConnectionState.done;
-        final me = snapshot.data;
-        final ready = loaded && !snapshot.hasError && me != null && me.listed;
-        final appBar = wide ? _wideBar(showTabs: ready) : _phoneBar();
+    final profile = ref.watch(myProfileProvider);
+    final me = profile.value;
+    final loaded = profile.hasValue || profile.hasError;
+    final ready =
+        loaded &&
+        !profile.isLoading &&
+        !profile.hasError &&
+        me != null &&
+        me.listed;
+    final appBar = wide ? _wideBar(showTabs: ready) : _phoneBar();
 
-        if (!loaded) {
-          return Scaffold(
-            appBar: appBar,
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (snapshot.hasError) {
-          return Scaffold(
-            appBar: appBar,
-            body: MessageView(
-              icon: Icons.cloud_off_outlined,
-              title: 'Your profile could not be loaded',
-              message: 'Check your connection and try again.',
-              action: FilledButton(
-                onPressed: _reloadProfile,
-                child: const Text('Try again'),
+    if (!loaded || (profile.isLoading && !ready)) {
+      return Scaffold(
+        appBar: appBar,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (profile.hasError) {
+      return Scaffold(
+        appBar: appBar,
+        body: MessageView(
+          icon: Icons.cloud_off_outlined,
+          title: 'Your profile could not be loaded',
+          message: 'Check your connection and try again.',
+          action: FilledButton(
+            onPressed: _reloadProfile,
+            child: const Text('Try again'),
+          ),
+        ),
+      );
+    }
+    if (!ready) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: appBar,
+        body: ProfileEditorPage(
+          repository: ref.read(membersRepositoryProvider),
+          initial: me,
+          onboarding: true,
+          onSaved: _reloadProfile,
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: appBar,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1240),
+          child: widget.navigationShell,
+        ),
+      ),
+      bottomNavigationBar: wide
+          ? null
+          : DecoratedBox(
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.line)),
+              ),
+              child: NavigationBar(
+                selectedIndex: _tab,
+                onDestinationSelected: _goTab,
+                destinations: [
+                  for (final (icon, selectedIcon, label) in _tabs)
+                    NavigationDestination(
+                      icon: Icon(icon),
+                      selectedIcon: Icon(selectedIcon),
+                      label: label,
+                    ),
+                ],
               ),
             ),
-          );
-        }
-        if (!ready) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: appBar,
-            body: ProfileEditorPage(
-              repository: widget.repository,
-              initial: me,
-              onboarding: true,
-              onSaved: _reloadProfile,
-            ),
-          );
-        }
-
-        final pages = [
-          SuggestionsPage(repository: widget.repository),
-          BrowsePage(repository: widget.repository),
-          ProfileEditorPage(
-            key: ValueKey(me.photoPath),
-            repository: widget.repository,
-            initial: me,
-            onSaved: () {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(const SnackBar(content: Text('Profile saved')));
-              _reloadProfile();
-            },
-          ),
-        ];
-        final body = Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1240),
-            child: IndexedStack(index: _tab, children: pages),
-          ),
-        );
-        return Scaffold(
-          appBar: appBar,
-          body: body,
-          bottomNavigationBar: wide
-              ? null
-              : DecoratedBox(
-                  decoration: const BoxDecoration(
-                    border: Border(top: BorderSide(color: AppColors.line)),
-                  ),
-                  child: NavigationBar(
-                    selectedIndex: _tab,
-                    onDestinationSelected: (i) => setState(() => _tab = i),
-                    destinations: [
-                      for (final (icon, selectedIcon, label) in _tabs)
-                        NavigationDestination(
-                          icon: Icon(icon),
-                          selectedIcon: Icon(selectedIcon),
-                          label: label,
-                        ),
-                    ],
-                  ),
-                ),
-        );
-      },
     );
   }
 }

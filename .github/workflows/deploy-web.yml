@@ -34,7 +34,12 @@ jobs:
       - run: flutter test
         if: hashFiles('test/**/*.dart') != ''
 
-      - run: flutter build web --release
+      # SENTRY_DSN is a repository variable (not a secret: DSNs ship in the
+      # app). Without it the build simply has error reporting off.
+      - run: >-
+          flutter build web --release
+          --dart-define=APP_ENV=${{ github.ref_name == 'main' && 'production' || 'dev' }}
+          --dart-define=SENTRY_DSN=${{ vars.SENTRY_DSN }}
 
       - name: Deploy to Cloudflare Pages
         id: deploy

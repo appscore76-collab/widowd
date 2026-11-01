@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../app/router.dart';
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
 import '../ui/app_widgets.dart';
 import 'member.dart';
-import 'member_detail_page.dart';
 
 /// A member's photo, or a person outline while it loads or if there isn't one.
 class MemberPhoto extends StatelessWidget {
@@ -79,10 +80,9 @@ String memberMeta(Member m) => [
 ].join(' · ');
 
 void openMember(BuildContext context, Member member, {List<String>? reasons}) {
-  Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => MemberDetailPage(member: member, reasons: reasons),
-    ),
+  context.push(
+    AppPaths.member(member.id),
+    extra: MemberRouteArgs(member, reasons: reasons),
   );
 }
 

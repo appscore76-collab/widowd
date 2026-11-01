@@ -19,6 +19,10 @@ abstract class MembersRepository {
   /// Best-effort removal of a photo the member no longer uses.
   Future<void> deletePhoto(String path);
 
+  /// One listed member (or the signed-in member), or null if they can't be
+  /// seen, for opening a profile from a link.
+  Future<Member?> member(String id);
+
   /// Listed members other than the signed-in one, newest first, optionally
   /// narrowed to a keyword (name, town or about text) and badges.
   Future<List<Member>> browse({
@@ -63,6 +67,17 @@ class SupabaseMembersRepository implements MembersRepository {
         .from('profiles')
         .select(Member.columns)
         .eq('id', currentUserId)
+        .maybeSingle();
+    if (row == null) return null;
+    return (await _withPhotoUrls([Member.fromJson(row)])).single;
+  }
+
+  @override
+  Future<Member?> member(String id) async {
+    final row = await _client
+        .from('profiles')
+        .select(Member.columns)
+        .eq('id', id)
         .maybeSingle();
     if (row == null) return null;
     return (await _withPhotoUrls([Member.fromJson(row)])).single;

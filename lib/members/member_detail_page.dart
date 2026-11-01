@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../app/providers.dart';
+import '../app/router.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
@@ -6,9 +11,70 @@ import '../ui/app_widgets.dart';
 import 'member.dart';
 import 'member_widgets.dart';
 
+/// A member's profile at /app/members/:id. Shows straight away when opened
+/// from a card, or loads the member when opened from a link or a refresh.
+class MemberDetailPage extends ConsumerStatefulWidget {
+  const MemberDetailPage({
+    super.key,
+    required this.memberId,
+    this.member,
+    this.reasons,
+  });
+
+  final String memberId;
+  final Member? member;
+  final List<String>? reasons;
+
+  @override
+  ConsumerState<MemberDetailPage> createState() => _MemberDetailPageState();
+}
+
+class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
+  late final Future<Member?>? _load = widget.member != null
+      ? null
+      : ref.read(membersRepositoryProvider).member(widget.memberId);
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.member != null) {
+      return _MemberView(member: widget.member!, reasons: widget.reasons);
+    }
+    return FutureBuilder<Member?>(
+      future: _load,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final member = snapshot.data;
+        if (member == null) {
+          return Scaffold(
+            body: MessageView(
+              icon: Icons.person_off_outlined,
+              title: 'This profile isn’t available',
+              message: snapshot.hasError
+                  ? 'Check your connection and try again.'
+                  : 'The member may have paused or removed their profile.',
+              action: FilledButton(
+                onPressed: () => context.go(AppPaths.discover),
+                child: const Text('Back to Discover'),
+              ),
+            ),
+          );
+        }
+        return _MemberView(member: member);
+      },
+    );
+  }
+}
+
+void _leave(BuildContext context) =>
+    context.canPop() ? context.pop() : context.go(AppPaths.discover);
+
 /// A member's full profile: photo on top, details on a rounded sheet.
-class MemberDetailPage extends StatelessWidget {
-  const MemberDetailPage({super.key, required this.member, this.reasons});
+class _MemberView extends StatelessWidget {
+  const _MemberView({required this.member, this.reasons});
 
   final Member member;
 
@@ -134,7 +200,7 @@ class MemberDetailPage extends StatelessWidget {
         color: Colors.white,
         shape: const CircleBorder(),
         child: IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () => _leave(context),
           tooltip: 'Back',
           icon: const Icon(Icons.chevron_left_rounded, size: 28),
           color: AppColors.ink,
@@ -156,7 +222,7 @@ class MemberDetailPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextButton.icon(
-                      onPressed: () => Navigator.of(context).maybePop(),
+                      onPressed: () => _leave(context),
                       icon: const Icon(Icons.chevron_left_rounded),
                       label: const Text('Back'),
                     ),
