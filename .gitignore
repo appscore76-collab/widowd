@@ -50,3 +50,23 @@ app.*.map.json
 # Supabase CLI
 supabase/.temp/
 supabase/.branches/
+
+# Secrets and keys — never commit these (see CLAUDE.md)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+android/key.properties
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+*service-account*.json
+secrets.*
+.supabase-access-token
