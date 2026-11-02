@@ -28,3 +28,7 @@ verify_jwt = true
 # Didit doesn't send a Supabase token; the function checks Didit's signature.
 [functions.didit-webhook]
 verify_jwt = false
+
+# Called server-side only; gated by PUSH_FUNCTION_SECRET, not a Supabase token.
+[functions.send-push]
+verify_jwt = false
