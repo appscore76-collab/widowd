@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../members/member.dart';
 import '../members/members_repository.dart';
+import '../push/push_service.dart';
 
 /// Supabase Auth. Overridden in [WidowdApp] (and in tests).
 final authClientProvider = Provider<GoTrueClient>(
@@ -17,6 +18,13 @@ final membersRepositoryProvider = Provider<MembersRepository>(
   (ref) =>
       throw UnimplementedError('membersRepositoryProvider is not overridden'),
 );
+
+/// Keeps this device's FCM token saved for the signed-in member.
+final pushServiceProvider = Provider<PushService>((ref) {
+  final service = PushService(ref.watch(membersRepositoryProvider));
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 /// Who is signed in, and whether they arrived from a password-reset link.
 /// The router listens to it to decide which pages can be shown.

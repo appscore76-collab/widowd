@@ -40,8 +40,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   void _reloadProfile() => ref.invalidate(myProfileProvider);
 
+  Future<void> _signOut() async {
+    // Stop this device receiving pushes before the session ends (best-effort).
+    await ref.read(pushServiceProvider).unregister();
+    await ref.read(authClientProvider).signOut();
+  }
+
   Widget _signOutButton() => TextButton(
-    onPressed: () => ref.read(authClientProvider).signOut(),
+    onPressed: _signOut,
     style: TextButton.styleFrom(foregroundColor: AppColors.ink),
     child: Text('Sign out', style: jakarta(14, weight: 700)),
   );

@@ -243,6 +243,40 @@ In each project, under **Authentication**:
 - **Emails:** Supabase's built-in email sender is rate-limited and meant for
   testing; set up custom SMTP before launch.
 
+## 6. Firebase (push notifications)
+
+Push uses Firebase Cloud Messaging. The Firebase project is **`widowd-dev`**
+(number `747251750497`); the app's bundle ID / package name is
+**`com.scoreconsultancy.widowd`** on both iOS and Android, matching the
+registered Firebase apps.
+
+**Config in the repo:**
+
+- `lib/firebase_options.dart` — the per-platform Firebase client config
+  (web, Android, iOS). Committed; these are client identifiers, not secrets.
+- `web/firebase-messaging-sw.js` — the web background-message service worker,
+  with the web config inline. The web VAPID key lives in
+  `lib/push/push_service.dart` (public Web Push certificate key).
+- `android/app/google-services.json` and `ios/Runner/GoogleService-Info.plist`
+  are **committed** (client config, not secrets), so clones and CI build the
+  native apps without extra provisioning.
+
+**Android:** the Google-services Gradle plugin is wired in
+`android/settings.gradle.kts` and `android/app/build.gradle.kts`; a native
+build fails without `google-services.json`.
+
+**iOS:** `Info.plist` declares the `remote-notification` background mode. iOS
+delivery also needs, in Xcode / Apple Developer (Phase 2): the **Push
+Notifications** capability on the Runner target, and an **APNs auth key**
+uploaded to Firebase → Project settings → Cloud Messaging. Until then iOS
+compiles but notifications won't arrive.
+
+**What the app does:** after sign-up / sign-in it calls
+`requestPermission()` and saves this device's FCM token to Supabase via the
+`save_device_token` RPC (into the `device_tokens` table); it refreshes the
+token when it rotates and removes it on sign-out. An Edge Function to actually
+send pushes (`send-push`) is the next step (roadmap C8).
+
 ## Troubleshooting
 
 - **Setup script fails with `Could not find a command named "--version#!/bin/bash"`.**
