@@ -64,9 +64,6 @@ supabase/.branches/
 *.keystore
 key.properties
 android/key.properties
-**/google-services.json
-**/GoogleService-Info.plist
-**/firebase_options.dart
 *service-account*.json
 secrets.*
 .supabase-access-token

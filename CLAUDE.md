@@ -24,10 +24,14 @@ what's built and what's next.
 
 - Never commit API keys, tokens, passwords, private keys or signing files.
   `.gitignore` excludes `.env*`, `*.pem/key/p8/p12/jks/keystore`,
-  `key.properties`, `google-services.json`, `GoogleService-Info.plist`,
-  service-account JSON and similar — keep it that way.
-- The only credential that may ship in the app is the Supabase
-  **publishable (anon) key**; RLS is what protects data, not the key.
+  `key.properties`, service-account JSON and similar — keep it that way.
+- The only credentials that may ship in the app are the Supabase
+  **publishable (anon) key** and the **Firebase client config**
+  (`lib/firebase_options.dart`, the web FCM config and VAPID key) — these are
+  client identifiers, not secrets. `firebase_options.dart` and the native
+  `android/app/google-services.json` / `ios/Runner/GoogleService-Info.plist`
+  are committed so clones and CI build without extra provisioning. RLS is what
+  protects data, not keys.
 - Server-side secrets (Daily, Didit, Twilio, SMTP, …) are set with
   `supabase secrets set` on `widowd-dev` and read only by Edge Functions.
 - CI secrets (Cloudflare, Supabase access token and DB password) live in

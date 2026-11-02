@@ -33,6 +33,16 @@ abstract class MembersRepository {
 
   /// People the system suggested for the signed-in member, newest first.
   Future<List<Suggestion>> suggestions();
+
+  /// Saves (or reassigns to this member) a device's FCM push token, so Edge
+  /// Functions can send notifications to it.
+  Future<void> saveDeviceToken({
+    required String token,
+    required String platform,
+  });
+
+  /// Removes a device's FCM token (e.g. on sign-out).
+  Future<void> deleteDeviceToken(String token);
 }
 
 /// What the Search page narrows members down to.
@@ -193,6 +203,19 @@ class SupabaseMembersRepository implements MembersRepository {
         ),
     ];
   }
+
+  @override
+  Future<void> saveDeviceToken({
+    required String token,
+    required String platform,
+  }) => _client.rpc(
+    'save_device_token',
+    params: {'p_token': token, 'p_platform': platform},
+  );
+
+  @override
+  Future<void> deleteDeviceToken(String token) =>
+      _client.rpc('delete_device_token', params: {'p_token': token});
 
   /// Signs every photo in one request; the bucket is private.
   Future<List<Member>> _withPhotoUrls(List<Member> members) async {

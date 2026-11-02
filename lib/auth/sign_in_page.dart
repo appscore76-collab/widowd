@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../app/providers.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
@@ -15,7 +18,7 @@ String? get authRedirectUrl => kIsWeb ? Uri.base.origin : null;
 
 enum _Mode { signIn, signUp }
 
-class SignInPage extends StatefulWidget {
+class SignInPage extends ConsumerStatefulWidget {
   const SignInPage({
     super.key,
     required this.auth,
@@ -32,10 +35,10 @@ class SignInPage extends StatefulWidget {
   final VoidCallback? onBack;
 
   @override
-  State<SignInPage> createState() => _SignInPageState();
+  ConsumerState<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> {
+class _SignInPageState extends ConsumerState<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -88,6 +91,13 @@ class _SignInPageState extends State<SignInPage> {
         }
       }
     });
+    // Signed in now (password sign-in, or sign-up with confirmation off):
+    // ask for notification permission and save this device's push token.
+    if (mounted && _error == null && widget.auth.currentSession != null) {
+      await ref
+          .read(pushServiceProvider)
+          .registerForCurrentUser(requestPermission: true);
+    }
   }
 
   Future<void> _forgotPassword() async {

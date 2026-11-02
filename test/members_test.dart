@@ -74,6 +74,18 @@ class FakeMembersRepository implements MembersRepository {
 
   @override
   Future<List<Suggestion>> suggestions() async => suggested;
+
+  final savedTokens = <String>[];
+
+  @override
+  Future<void> saveDeviceToken({
+    required String token,
+    required String platform,
+  }) async => savedTokens.add('$platform:$token');
+
+  @override
+  Future<void> deleteDeviceToken(String token) async =>
+      savedTokens.remove(token);
 }
 
 const listedMe = Member(
