@@ -19,6 +19,32 @@ final membersRepositoryProvider = Provider<MembersRepository>(
       throw UnimplementedError('membersRepositoryProvider is not overridden'),
 );
 
+/// Members the signed-in member has liked. Drives the "blurred until you like
+/// them" photo unlock across Discover, Search and profiles, and updates
+/// instantly when a like happens.
+final likedIdsProvider = NotifierProvider<LikedIdsNotifier, Set<String>>(
+  LikedIdsNotifier.new,
+);
+
+class LikedIdsNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() {
+    _load();
+    return const {};
+  }
+
+  Future<void> _load() async {
+    try {
+      state = await ref.read(membersRepositoryProvider).likedMemberIds();
+    } catch (_) {
+      // Keep whatever we have; photos just stay blurred until a reload.
+    }
+  }
+
+  /// Records a like locally so the member's photo unlocks immediately.
+  void add(String id) => state = {...state, id};
+}
+
 /// Keeps this device's FCM token saved for the signed-in member.
 final pushServiceProvider = Provider<PushService>((ref) {
   final service = PushService(ref.watch(membersRepositoryProvider));

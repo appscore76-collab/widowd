@@ -36,8 +36,13 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final liked = ref.watch(likedIdsProvider);
     if (widget.member != null) {
-      return _MemberView(member: widget.member!, reasons: widget.reasons);
+      return _MemberView(
+        member: widget.member!,
+        reasons: widget.reasons,
+        locked: !liked.contains(widget.member!.id),
+      );
     }
     return FutureBuilder<Member?>(
       future: _load,
@@ -63,7 +68,7 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
             ),
           );
         }
-        return _MemberView(member: member);
+        return _MemberView(member: member, locked: !liked.contains(member.id));
       },
     );
   }
@@ -74,12 +79,15 @@ void _leave(BuildContext context) =>
 
 /// A member's full profile: photo on top, details on a rounded sheet.
 class _MemberView extends StatelessWidget {
-  const _MemberView({required this.member, this.reasons});
+  const _MemberView({required this.member, this.reasons, this.locked = false});
 
   final Member member;
 
   /// Why the system suggested this member, when opened from a suggestion.
   final List<String>? reasons;
+
+  /// Blur the photo until the viewer has liked this member.
+  final bool locked;
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +245,7 @@ class _MemberView extends StatelessWidget {
                             child: MemberPhoto(
                               member: member,
                               borderRadius: BorderRadius.circular(28),
+                              locked: locked,
                             ),
                           ),
                         ),
@@ -270,7 +279,7 @@ class _MemberView extends StatelessWidget {
                 SizedBox(
                   height: 360,
                   width: double.infinity,
-                  child: MemberPhoto(member: member),
+                  child: MemberPhoto(member: member, locked: locked),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 336),

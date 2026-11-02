@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers.dart';
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
 import 'member.dart';
@@ -309,14 +311,15 @@ class _FilterPill extends StatelessWidget {
 }
 
 /// A member in the search results: photo, name, details and badges.
-class SearchResultRow extends StatelessWidget {
+class SearchResultRow extends ConsumerWidget {
   const SearchResultRow({super.key, required this.member});
 
   final Member member;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final meta = memberMeta(member);
+    final locked = !ref.watch(likedIdsProvider).contains(member.id);
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
@@ -333,6 +336,7 @@ class SearchResultRow extends StatelessWidget {
                 child: MemberPhoto(
                   member: member,
                   borderRadius: BorderRadius.circular(16),
+                  locked: locked,
                 ),
               ),
               const SizedBox(width: 12),

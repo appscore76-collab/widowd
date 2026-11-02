@@ -32,7 +32,17 @@ abstract class MembersRepository {
   });
 
   /// People the system suggested for the signed-in member, newest first.
+  /// Excludes ones the member has passed on.
   Future<List<Suggestion>> suggestions();
+
+  /// Likes a member. Returns true if it created a mutual match.
+  Future<bool> likeMember(String id);
+
+  /// Passes on a member (removes them from suggestions).
+  Future<void> passMember(String id);
+
+  /// IDs of members the signed-in member has liked (drives photo unlock).
+  Future<Set<String>> likedMemberIds();
 
   /// Saves (or reassigns to this member) a device's FCM push token, so Edge
   /// Functions can send notifications to it.
@@ -169,6 +179,7 @@ class SupabaseMembersRepository implements MembersRepository {
           'a:profiles!matches_user_a_fkey(${Member.columns}), '
           'b:profiles!matches_user_b_fkey(${Member.columns})',
         )
+        .neq('status', 'ended')
         .order('created_at', ascending: false);
 
     final suggestions = <Suggestion>[];
@@ -202,6 +213,22 @@ class SupabaseMembersRepository implements MembersRepository {
           createdAt: suggestions[i].createdAt,
         ),
     ];
+  }
+
+  @override
+  Future<bool> likeMember(String id) async {
+    final matched = await _client.rpc('like_member', params: {'target': id});
+    return matched == true;
+  }
+
+  @override
+  Future<void> passMember(String id) =>
+      _client.rpc('pass_member', params: {'target': id});
+
+  @override
+  Future<Set<String>> likedMemberIds() async {
+    final rows = await _client.from('likes').select('liked');
+    return {for (final r in rows) r['liked'] as String};
   }
 
   @override
