@@ -197,6 +197,15 @@ supabase secrets set DAILY_API_KEY=... DAILY_DOMAIN=... --project-ref gzgrbbeohc
 supabase secrets set DIDIT_API_KEY=... DIDIT_WORKFLOW_ID_IDCHECK=... DIDIT_WORKFLOW_ID_PHOTO=... DIDIT_WEBHOOK_SECRET=... --project-ref gzgrbbeohcerznezawna
 ```
 
+```bash
+supabase secrets set PUSH_FUNCTION_SECRET=... FIREBASE_SERVICE_ACCOUNT="$(cat service-account.json)" --project-ref gzgrbbeohcerznezawna
+```
+
+`PUSH_FUNCTION_SECRET` is any long random string (callers send it as the
+`x-push-secret` header). `FIREBASE_SERVICE_ACCOUNT` is the Firebase service
+account JSON (Firebase console → Project settings → Service accounts →
+Generate new private key); keep that file out of git.
+
 **Deploy the functions.** All three are deployed to `widowd-dev`; until the
 secrets above are set they answer `not_configured`. `deploy-supabase-dev.yml`
 redeploys them, using the JWT settings in `supabase/config.toml`. By hand:
@@ -213,6 +222,10 @@ supabase functions deploy start-verification --project-ref gzgrbbeohcerznezawna
 
 ```bash
 supabase functions deploy didit-webhook --no-verify-jwt --project-ref gzgrbbeohcerznezawna
+```
+
+```bash
+supabase functions deploy send-push --no-verify-jwt --project-ref gzgrbbeohcerznezawna
 ```
 
 **Third-party settings:**
@@ -274,8 +287,15 @@ compiles but notifications won't arrive.
 **What the app does:** after sign-up / sign-in it calls
 `requestPermission()` and saves this device's FCM token to Supabase via the
 `save_device_token` RPC (into the `device_tokens` table); it refreshes the
-token when it rotates and removes it on sign-out. An Edge Function to actually
-send pushes (`send-push`) is the next step (roadmap C8).
+token when it rotates and removes it on sign-out.
+
+**Sending pushes.** The `send-push` Edge Function takes
+`{ userId, title, body, data? }` and the `x-push-secret` header, looks up the
+member's `device_tokens` and sends via FCM, dropping tokens FCM reports as
+unregistered. It's server-side only (set `PUSH_FUNCTION_SECRET` and
+`FIREBASE_SERVICE_ACCOUNT` above). Features that should notify (new message,
+match, date invite) call it from their own Edge Function or a DB trigger with
+the shared secret — those triggers aren't wired yet.
 
 ## Troubleshooting
 

@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,11 +10,20 @@ import '../ui/app_widgets.dart';
 import 'member.dart';
 
 /// A member's photo, or a person outline while it loads or if there isn't one.
+///
+/// When [locked], the photo is blurred with a lock overlay — the "blurred
+/// until you like them" rule. Liking a member clears it.
 class MemberPhoto extends StatelessWidget {
-  const MemberPhoto({super.key, required this.member, this.borderRadius});
+  const MemberPhoto({
+    super.key,
+    required this.member,
+    this.borderRadius,
+    this.locked = false,
+  });
 
   final Member member;
   final BorderRadius? borderRadius;
+  final bool locked;
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +40,50 @@ class MemberPhoto extends StatelessWidget {
       ),
     );
     final url = member.photoUrl;
+    Widget image = url == null
+        ? placeholder
+        : Image.network(
+            url,
+            fit: BoxFit.cover,
+            semanticLabel: locked
+                ? null
+                : 'Photo of ${member.displayName ?? 'member'}',
+            excludeFromSemantics: locked,
+            errorBuilder: (_, _, _) => placeholder,
+            loadingBuilder: (_, child, progress) =>
+                progress == null ? child : placeholder,
+          );
+    if (locked) {
+      image = Semantics(
+        label: 'Photo hidden — like to view',
+        image: true,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (url == null)
+              placeholder
+            else
+              ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: image,
+              ),
+            const ColoredBox(color: Color(0x1A0F1614)),
+            LayoutBuilder(
+              builder: (context, c) => Center(
+                child: Icon(
+                  Icons.lock_outline_rounded,
+                  size: (c.biggest.shortestSide * 0.32).clamp(16.0, 48.0),
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
-      child: url == null
-          ? placeholder
-          : Image.network(
-              url,
-              fit: BoxFit.cover,
-              semanticLabel: 'Photo of ${member.displayName ?? 'member'}',
-              errorBuilder: (_, _, _) => placeholder,
-              loadingBuilder: (_, child, progress) =>
-                  progress == null ? child : placeholder,
-            ),
+      child: image,
     );
   }
 }

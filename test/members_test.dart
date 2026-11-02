@@ -25,6 +25,11 @@ class FakeMembersRepository implements MembersRepository {
   ProfileDraft? saved;
   BrowseFilter? lastFilter;
 
+  /// Members whose id is in here will produce a match when liked.
+  final Set<String> reciprocalLikers = {};
+  final List<String> liked = [];
+  final List<String> passed = [];
+
   @override
   String get currentUserId => 'me';
 
@@ -76,6 +81,18 @@ class FakeMembersRepository implements MembersRepository {
   Future<List<Suggestion>> suggestions() async => suggested;
 
   final savedTokens = <String>[];
+
+  @override
+  Future<bool> likeMember(String id) async {
+    liked.add(id);
+    return reciprocalLikers.contains(id);
+  }
+
+  @override
+  Future<void> passMember(String id) async => passed.add(id);
+
+  @override
+  Future<Set<String>> likedMemberIds() async => liked.toSet();
 
   @override
   Future<void> saveDeviceToken({
@@ -305,10 +322,74 @@ void main() {
       );
     });
 
+    Future<void> pumpDiscoverWith(
+      WidgetTester tester,
+      FakeMembersRepository repo,
+    ) => pumpShell(tester, repo);
+
+    FakeMembersRepository repoWithRobert({Set<String> reciprocal = const {}}) {
+      final r = FakeMembersRepository(
+        me: listedMe,
+        members: const [robert],
+        suggested: [
+          Suggestion(
+            matchId: 1,
+            member: robert,
+            status: 'suggested',
+            reasons: const ['Also lives in Leeds'],
+            createdAt: DateTime(2026, 10, 31),
+          ),
+        ],
+      );
+      r.reciprocalLikers.addAll(reciprocal);
+      return r;
+    }
+
+    testWidgets('photo is locked until you like, then unlocks', (tester) async {
+      await pumpDiscoverWith(tester, repoWithRobert());
+
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+      await tapText(tester, 'Like');
+      expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+    });
+
+    testWidgets('Pass removes the suggestion and records it', (tester) async {
+      final repo = repoWithRobert();
+      await pumpDiscoverWith(tester, repo);
+      final age = DateTime.now().year - 1959;
+      expect(find.text('Robert, $age'), findsOneWidget);
+
+      await tapText(tester, 'Pass');
+
+      expect(find.text('Robert, $age'), findsNothing);
+      expect(repo.passed, ['robert']);
+    });
+
+    testWidgets('Like without a reciprocal shows Liked', (tester) async {
+      final repo = repoWithRobert();
+      await pumpDiscoverWith(tester, repo);
+
+      await tapText(tester, 'Like');
+
+      expect(repo.liked, ['robert']);
+      expect(find.text('Liked'), findsOneWidget);
+      expect(find.textContaining('matched'), findsNothing);
+    });
+
+    testWidgets('Like with a reciprocal shows a match', (tester) async {
+      final repo = repoWithRobert(reciprocal: {'robert'});
+      await pumpDiscoverWith(tester, repo);
+
+      await tapText(tester, 'Like');
+
+      expect(find.text('You’re matched'), findsOneWidget);
+      expect(find.textContaining('match with Robert'), findsOneWidget);
+    });
+
     testWidgets('explains when there are no suggestions', (tester) async {
       await pumpShell(tester, FakeMembersRepository(me: listedMe));
 
-      expect(find.text('No suggestions yet'), findsOneWidget);
+      expect(find.text('No suggestions right now'), findsOneWidget);
     });
 
     testWidgets('search lists members and filters them', (tester) async {
