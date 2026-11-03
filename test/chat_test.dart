@@ -242,6 +242,41 @@ void main() {
     expect(find.byTooltip('Send'), findsOneWidget);
   });
 
+  testWidgets('the member profile shows Message and opens chat when matched', (
+    tester,
+  ) async {
+    final chat = FakeChatRepository(
+      initialConversations: [convWithRobert(last: 'Hi')],
+      messages: {
+        10: [
+          Message(
+            id: 1,
+            conversationId: 10,
+            senderId: 'robert',
+            body: 'Hi',
+            createdAt: DateTime(2026, 11, 3),
+          ),
+        ],
+      },
+    );
+    await pump(
+      tester,
+      chat: chat,
+      members: FakeMembersRepository(me: listedMe, members: const [robert]),
+    );
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/app/members/robert');
+    await tester.pumpAndSettle();
+
+    // Matched: photo unlocked and a Message button that opens the chat.
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Message'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Message'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Send'), findsOneWidget);
+  });
+
   testWidgets('unread messages badge the Chats tab', (tester) async {
     final chat = FakeChatRepository(
       initialConversations: [convWithRobert(unread: 3, last: 'Hi')],

@@ -319,9 +319,8 @@ class SearchResultRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final meta = memberMeta(member);
-    final liked = ref.watch(likedIdsProvider).contains(member.id);
-    final matched = ref.watch(matchedConversationsProvider).containsKey(member.id);
-    final locked = !(liked || matched);
+    // The photo is revealed only once you've matched.
+    final locked = !ref.watch(matchedConversationsProvider).containsKey(member.id);
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),

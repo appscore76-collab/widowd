@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers.dart';
 import '../app/router.dart';
-import '../chat/chat_nav.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
@@ -35,20 +34,46 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
       ? null
       : ref.read(membersRepositoryProvider).member(widget.memberId);
 
+  /// The conversation with this member, once resolved. Non-null means the pair
+  /// is matched — which both reveals the photo and enables "Message".
+  int? _conversationId;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveConversation();
+  }
+
+  Future<void> _resolveConversation() async {
+    try {
+      final id = await ref
+          .read(chatRepositoryProvider)
+          .conversationIdForPeer(widget.memberId);
+      if (mounted && id != null) setState(() => _conversationId = id);
+    } catch (_) {
+      // No conversation resolved; the profile stays locked with no Message.
+    }
+  }
+
+  void _openChat(Member member) {
+    final id = _conversationId;
+    if (id == null) return;
+    context.push(
+      AppPaths.chat(id),
+      extra: ChatRouteArgs(conversationId: id, peer: member),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final liked = ref.watch(likedIdsProvider);
-    final matched = ref.watch(matchedConversationsProvider);
-    // A like or a match reveals the photo; a match also offers "Message".
-    bool unlocked(Member m) => liked.contains(m.id) || matched.containsKey(m.id);
-    VoidCallback? messageAction(Member m) =>
-        matched.containsKey(m.id) ? () => openChatWith(context, ref, m) : null;
+    final matched = _conversationId != null;
+    VoidCallback? messageAction(Member m) => matched ? () => _openChat(m) : null;
 
     if (widget.member != null) {
       return _MemberView(
         member: widget.member!,
         reasons: widget.reasons,
-        locked: !unlocked(widget.member!),
+        locked: !matched,
         onMessage: messageAction(widget.member!),
       );
     }
@@ -78,7 +103,7 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
         }
         return _MemberView(
           member: member,
-          locked: !unlocked(member),
+          locked: !matched,
           onMessage: messageAction(member),
         );
       },

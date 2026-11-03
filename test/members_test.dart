@@ -345,8 +345,17 @@ void main() {
       return r;
     }
 
-    testWidgets('photo is locked until you like, then unlocks', (tester) async {
+    testWidgets('a like alone keeps the photo locked', (tester) async {
       await pumpDiscoverWith(tester, repoWithRobert());
+
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+      await tapText(tester, 'Like');
+      // No reciprocal like, so no match — the photo stays locked.
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+    });
+
+    testWidgets('a match unlocks the photo', (tester) async {
+      await pumpDiscoverWith(tester, repoWithRobert(reciprocal: {'robert'}));
 
       expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
       await tapText(tester, 'Like');

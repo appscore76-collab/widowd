@@ -227,8 +227,8 @@ class SuggestionCard extends StatelessWidget {
                 child: MemberPhoto(
                   member: m,
                   borderRadius: BorderRadius.circular(30),
-                  // A match reveals the photo too, not just a like.
-                  locked: !(liked || matched),
+                  // The photo is revealed only once you've matched.
+                  locked: !matched,
                 ),
               ),
               const SizedBox(width: 12),
