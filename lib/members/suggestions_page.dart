@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers.dart';
+import '../chat/chat_nav.dart';
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
 import '../ui/app_widgets.dart';
@@ -73,6 +74,8 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
             ),
           );
         }
+        // Pick up the new conversation so Message works and photos stay clear.
+        ref.read(matchedConversationsProvider.notifier).refresh();
         _toast('It’s a match with ${s.member.displayName ?? 'them'}!');
       } else {
         setState(() {}); // reflect the liked state on the card
@@ -81,6 +84,8 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
       if (mounted) _toast('Could not like. Please try again.');
     }
   }
+
+  void _message(Suggestion s) => openChatWith(context, ref, s.member);
 
   void _toast(String message) =>
       ScaffoldMessenger.of(context)
@@ -171,6 +176,7 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
                   liked: liked.contains(s.member.id),
                   onLike: () => _like(s),
                   onPass: () => _pass(s),
+                  onMessage: () => _message(s),
                 );
               },
             ),
@@ -189,12 +195,14 @@ class SuggestionCard extends StatelessWidget {
     required this.liked,
     required this.onLike,
     required this.onPass,
+    required this.onMessage,
   });
 
   final Suggestion suggestion;
   final bool liked;
   final VoidCallback onLike;
   final VoidCallback onPass;
+  final VoidCallback onMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +227,8 @@ class SuggestionCard extends StatelessWidget {
                 child: MemberPhoto(
                   member: m,
                   borderRadius: BorderRadius.circular(30),
-                  locked: !liked,
+                  // A match reveals the photo too, not just a like.
+                  locked: !(liked || matched),
                 ),
               ),
               const SizedBox(width: 12),
@@ -270,28 +279,32 @@ class SuggestionCard extends StatelessWidget {
           const Spacer(),
           const SizedBox(height: 10),
           if (matched)
-            Container(
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.teal,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.favorite_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'You’re matched',
-                    style: jakarta(14, weight: 800, color: Colors.white),
-                  ),
-                ],
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.favorite_rounded,
+                      color: AppColors.teal,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'You’re matched',
+                      style: jakarta(14, weight: 800, color: AppColors.teal),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _ActionButton(
+                  icon: Icons.chat_bubble_rounded,
+                  label: 'Message',
+                  filled: true,
+                  onPressed: onMessage,
+                ),
+              ],
             )
           else
             Row(

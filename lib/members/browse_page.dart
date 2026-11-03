@@ -319,7 +319,9 @@ class SearchResultRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final meta = memberMeta(member);
-    final locked = !ref.watch(likedIdsProvider).contains(member.id);
+    final liked = ref.watch(likedIdsProvider).contains(member.id);
+    final matched = ref.watch(matchedConversationsProvider).containsKey(member.id);
+    final locked = !(liked || matched);
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),

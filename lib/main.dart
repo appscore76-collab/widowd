@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/providers.dart';
 import 'app/router.dart';
+import 'chat/chat_repository.dart';
 import 'firebase_options.dart';
 import 'members/members_repository.dart';
 import 'push/push_service.dart';
@@ -74,6 +75,7 @@ class WidowdApp extends StatelessWidget {
     super.key,
     required this.auth,
     this.repository,
+    this.chatRepository,
     this.session,
     this.landingVideos = true,
   });
@@ -82,6 +84,9 @@ class WidowdApp extends StatelessWidget {
 
   /// Overrides the Supabase-backed members data layer, for tests.
   final MembersRepository Function()? repository;
+
+  /// Overrides the Supabase-backed chat data layer, for tests.
+  final ChatRepository Function()? chatRepository;
 
   /// Overrides who is signed in, for tests.
   final AuthSession? session;
@@ -98,6 +103,11 @@ class WidowdApp extends StatelessWidget {
           (ref) =>
               repository?.call() ??
               SupabaseMembersRepository(Supabase.instance.client),
+        ),
+        chatRepositoryProvider.overrideWith(
+          (ref) =>
+              chatRepository?.call() ??
+              SupabaseChatRepository(Supabase.instance.client),
         ),
         if (session != null) authSessionProvider.overrideWithValue(session!),
         landingVideosEnabledProvider.overrideWithValue(landingVideos),

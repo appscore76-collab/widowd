@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../auth/reset_password_page.dart';
 import '../auth/sign_in_page.dart';
+import '../chat/chat_page.dart';
+import '../chat/chats_page.dart';
 import '../landing/landing_page.dart';
 import '../members/browse_page.dart';
 import '../members/home_shell.dart';
@@ -21,8 +23,10 @@ abstract final class AppPaths {
   static const resetPassword = '/reset-password';
   static const discover = '/app/discover';
   static const search = '/app/search';
+  static const chats = '/app/chats';
   static const me = '/app/me';
   static String member(String id) => '/app/members/$id';
+  static String chat(int conversationId) => '/app/chat/$conversationId';
 }
 
 /// What a member page was opened with, so it can show without reloading.
@@ -31,6 +35,14 @@ class MemberRouteArgs {
 
   final Member member;
   final List<String>? reasons;
+}
+
+/// What a chat page was opened with, so it can show the peer straight away.
+class ChatRouteArgs {
+  const ChatRouteArgs({required this.conversationId, required this.peer});
+
+  final int conversationId;
+  final Member peer;
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -93,12 +105,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppPaths.chats,
+                builder: (context, state) =>
+                    ChatsPage(repository: ref.read(chatRepositoryProvider)),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppPaths.me,
                 builder: (context, state) => const MyProfilePage(),
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/app/chat/:id',
+        builder: (context, state) {
+          final args = state.extra is ChatRouteArgs
+              ? state.extra! as ChatRouteArgs
+              : null;
+          return ChatPage(
+            repository: ref.read(chatRepositoryProvider),
+            conversationId: int.parse(state.pathParameters['id']!),
+            peer: args?.peer,
+          );
+        },
       ),
       GoRoute(
         path: '/app/members/:id',

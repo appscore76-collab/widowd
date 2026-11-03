@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../chat/chat_repository.dart';
 import '../members/member.dart';
 import '../members/members_repository.dart';
 import '../push/push_service.dart';
@@ -43,6 +44,71 @@ class LikedIdsNotifier extends Notifier<Set<String>> {
 
   /// Records a like locally so the member's photo unlocks immediately.
   void add(String id) => state = {...state, id};
+}
+
+/// The chat data layer. Overridden in [WidowdApp] (and in tests).
+final chatRepositoryProvider = Provider<ChatRepository>(
+  (ref) => throw UnimplementedError('chatRepositoryProvider is not overridden'),
+);
+
+/// Members the signed-in member is matched with, mapped to their conversation
+/// id. Drives both the photo unlock (a match reveals the photo, like a like
+/// does) and the "Message" shortcut from Discover and profiles. Loads in the
+/// background; failures (and tests without a chat repository) leave it empty.
+final matchedConversationsProvider =
+    NotifierProvider<MatchedConversationsNotifier, Map<String, int>>(
+      MatchedConversationsNotifier.new,
+    );
+
+class MatchedConversationsNotifier extends Notifier<Map<String, int>> {
+  @override
+  Map<String, int> build() {
+    _load();
+    return const {};
+  }
+
+  Future<void> _load() async {
+    try {
+      final conversations = await ref
+          .read(chatRepositoryProvider)
+          .conversations();
+      state = {for (final c in conversations) c.peer.id: c.id};
+    } catch (_) {
+      // Keep what we have; photos just stay as they are until a reload.
+    }
+  }
+
+  /// Reloads after a new match (so the new conversation is known).
+  Future<void> refresh() => _load();
+}
+
+/// Total unread messages across all conversations, for the Chats tab badge.
+/// Starts at 0 and loads in the background; failures leave it at 0 so the app
+/// (and tests without a chat repository) keep working.
+final totalUnreadProvider = NotifierProvider<TotalUnreadNotifier, int>(
+  TotalUnreadNotifier.new,
+);
+
+class TotalUnreadNotifier extends Notifier<int> {
+  @override
+  int build() {
+    _load();
+    return 0;
+  }
+
+  Future<void> _load() async {
+    try {
+      final conversations = await ref
+          .read(chatRepositoryProvider)
+          .conversations();
+      state = conversations.fold(0, (sum, c) => sum + c.unreadCount);
+    } catch (_) {
+      // Keep the current count; the badge just doesn't update this time.
+    }
+  }
+
+  /// Recomputes the badge, e.g. after opening or reading a conversation.
+  Future<void> refresh() => _load();
 }
 
 /// Keeps this device's FCM token saved for the signed-in member.

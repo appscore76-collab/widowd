@@ -35,8 +35,16 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   static const _tabs = [
     (Icons.favorite_border_rounded, Icons.favorite_rounded, 'Discover'),
     (Icons.search_rounded, Icons.search_rounded, 'Search'),
+    (Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'Chats'),
     (Icons.person_outline_rounded, Icons.person_rounded, 'Me'),
   ];
+
+  /// Wraps a tab icon in an unread badge, for the Chats tab only.
+  Widget _tabIcon(String label, IconData icon, int unread) {
+    final child = Icon(icon);
+    if (label != 'Chats' || unread <= 0) return child;
+    return Badge(label: Text(unread > 99 ? '99+' : '$unread'), child: child);
+  }
 
   void _reloadProfile() => ref.invalidate(myProfileProvider);
 
@@ -60,7 +68,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   );
 
   /// The desktop header: wordmark, tabs and sign out.
-  PreferredSizeWidget _wideBar({required bool showTabs}) => PreferredSize(
+  PreferredSizeWidget _wideBar({
+    required bool showTabs,
+    required int unread,
+  }) => PreferredSize(
     preferredSize: const Size.fromHeight(73),
     child: Container(
       decoration: const BoxDecoration(
@@ -87,6 +98,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                           icon: i == _tab ? selectedIcon : icon,
                           label: label,
                           selected: i == _tab,
+                          badge: label == 'Chats' ? unread : 0,
                           onTap: () => _goTab(i),
                         ),
                       ),
@@ -105,6 +117,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= 900;
     final profile = ref.watch(myProfileProvider);
+    final unread = ref.watch(totalUnreadProvider);
     final me = profile.value;
     final loaded = profile.hasValue || profile.hasError;
     final ready =
@@ -113,7 +126,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         !profile.hasError &&
         me != null &&
         me.listed;
-    final appBar = wide ? _wideBar(showTabs: ready) : _phoneBar();
+    final appBar = wide ? _wideBar(showTabs: ready, unread: unread) : _phoneBar();
 
     if (!loaded || (profile.isLoading && !ready)) {
       return Scaffold(
@@ -168,8 +181,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 destinations: [
                   for (final (icon, selectedIcon, label) in _tabs)
                     NavigationDestination(
-                      icon: Icon(icon),
-                      selectedIcon: Icon(selectedIcon),
+                      icon: _tabIcon(label, icon, unread),
+                      selectedIcon: _tabIcon(label, selectedIcon, unread),
                       label: label,
                     ),
                 ],
@@ -185,16 +198,19 @@ class _TopTab extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.badge = 0,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
+  final int badge;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final color = selected ? AppColors.teal : AppColors.muted;
+    final iconWidget = Icon(icon, size: 20, color: color);
     return Semantics(
       selected: selected,
       button: true,
@@ -210,7 +226,12 @@ class _TopTab extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 20, color: color),
+                badge > 0
+                    ? Badge(
+                        label: Text(badge > 99 ? '99+' : '$badge'),
+                        child: iconWidget,
+                      )
+                    : iconWidget,
                 const SizedBox(width: 8),
                 Text(
                   label,
