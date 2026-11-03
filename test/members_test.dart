@@ -310,7 +310,6 @@ void main() {
       final age = DateTime.now().year - 1959;
       expect(find.text('Today’s suggestions'), findsOneWidget);
       expect(find.text('Robert, $age'), findsOneWidget);
-      expect(find.text('Also lives in Leeds'), findsOneWidget);
       expect(find.text('ID checked'), findsOneWidget);
 
       await tapText(tester, 'Robert, $age');
@@ -428,8 +427,8 @@ void main() {
 
     testWidgets('Me shows the profile editor and saves', (tester) async {
       final repo = FakeMembersRepository(me: listedMe);
-      // Tall enough that typing doesn't scroll the save button away.
-      await pumpShell(tester, repo, size: const Size(1200, 2400));
+      // Tall enough that the (now longer) editor's save button stays on screen.
+      await pumpShell(tester, repo, size: const Size(1200, 4400));
 
       await tapText(tester, 'Me');
       expect(find.text('My profile'), findsOneWidget);

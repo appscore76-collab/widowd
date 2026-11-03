@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers.dart';
 import '../app/router.dart';
+import '../plus/plus.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
@@ -34,47 +35,38 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
       ? null
       : ref.read(membersRepositoryProvider).member(widget.memberId);
 
-  /// The conversation with this member, once resolved. Non-null means the pair
-  /// is matched — which both reveals the photo and enables "Message".
-  int? _conversationId;
+  /// Whether the pair is matched (a conversation exists). Drives the photo
+  /// unlock — the photo is revealed only once you've matched.
+  bool _matched = false;
 
   @override
   void initState() {
     super.initState();
-    _resolveConversation();
+    _resolveMatch();
   }
 
-  Future<void> _resolveConversation() async {
+  Future<void> _resolveMatch() async {
     try {
       final id = await ref
           .read(chatRepositoryProvider)
           .conversationIdForPeer(widget.memberId);
-      if (mounted && id != null) setState(() => _conversationId = id);
+      if (mounted && id != null) setState(() => _matched = true);
     } catch (_) {
-      // No conversation resolved; the profile stays locked with no Message.
+      // Stay locked; the photo just isn't revealed.
     }
   }
 
-  void _openChat(Member member) {
-    final id = _conversationId;
-    if (id == null) return;
-    context.push(
-      AppPaths.chat(id),
-      extra: ChatRouteArgs(conversationId: id, peer: member),
-    );
-  }
+  // Messaging is a Widowd Plus feature (design screen 07/17).
+  void _message() => showPlusSheet(context, feature: 'Messaging');
 
   @override
   Widget build(BuildContext context) {
-    final matched = _conversationId != null;
-    VoidCallback? messageAction(Member m) => matched ? () => _openChat(m) : null;
-
     if (widget.member != null) {
       return _MemberView(
         member: widget.member!,
         reasons: widget.reasons,
-        locked: !matched,
-        onMessage: messageAction(widget.member!),
+        locked: !_matched,
+        onMessage: _message,
       );
     }
     return FutureBuilder<Member?>(
@@ -103,8 +95,8 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
         }
         return _MemberView(
           member: member,
-          locked: !matched,
-          onMessage: messageAction(member),
+          locked: !_matched,
+          onMessage: _message,
         );
       },
     );
@@ -131,13 +123,19 @@ class _MemberView extends StatelessWidget {
   /// Blur the photo until the viewer has liked or matched this member.
   final bool locked;
 
-  /// Opens the conversation; shown only when the viewer is matched with them.
+  /// Opens the Message action (a Plus feature).
   final VoidCallback? onMessage;
 
   @override
   Widget build(BuildContext context) {
     final bio = member.bio?.trim();
+    final readyFor = member.readyFor?.trim();
+    final occupation = member.occupation?.trim();
     final city = member.city?.trim();
+    final metaParts = <String>[
+      if (city != null && city.isNotEmpty) city,
+      if (occupation != null && occupation.isNotEmpty) occupation,
+    ];
     // Badges already show above, so leave them out of the reasons.
     final reasons = this.reasons
         ?.where((r) => r != 'ID verified' && r != 'Photo verified')
@@ -154,21 +152,26 @@ class _MemberView extends StatelessWidget {
             style: jakarta(26, weight: 800, letterSpacingEm: -0.4 / 26),
           ),
         ),
-        if (city != null && city.isNotEmpty) ...[
+        if (metaParts.isNotEmpty) ...[
           const SizedBox(height: 3),
-          Text(city, style: jakarta(14, color: AppColors.muted)),
+          Text(metaParts.join(' · '), style: jakarta(14, color: AppColors.muted)),
         ],
-        if (onMessage != null) ...[
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: onMessage,
-              icon: const Icon(Icons.chat_bubble_rounded, size: 18),
-              label: const Text('Message'),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: onMessage,
+            icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+            label: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Message'),
+                SizedBox(width: 6),
+                Icon(Icons.lock_rounded, size: 14),
+              ],
             ),
           ),
-        ],
+        ),
         if (member.photoVerified || member.idVerified) ...[
           const SizedBox(height: 14),
           Row(
@@ -209,37 +212,57 @@ class _MemberView extends StatelessWidget {
             children: [
               Expanded(
                 child: StatTile(
-                  label: 'Age',
-                  value: member.age?.toString() ?? '–',
-                  note: member.birthYear == null
+                  label: 'Children',
+                  value: member.childrenCount == null
+                      ? '–'
+                      : (member.childrenCount! >= 5
+                            ? '5+'
+                            : '${member.childrenCount}'),
+                  note: member.childrenAges == null
                       ? null
-                      : 'Born ${member.birthYear}',
+                      : childrenAgesLabel(member.childrenAges!),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: StatTile(
-                  label: 'Gender',
-                  value: member.gender == null
+                  label: 'Widowed',
+                  value: member.journey == null
                       ? '–'
-                      : genderLabel(member.gender!),
+                      : (journeyLabel(member.journey!) ?? '–'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: StatTile(
                   label: 'Looking for',
-                  value: member.interestedIn.isEmpty
+                  value: member.intent == null
                       ? '–'
-                      : member.interestedIn.map(genderPluralLabel).join(', '),
+                      : intentShort(member.intent!),
                 ),
               ),
             ],
           ),
         ),
+        if (readyFor != null && readyFor.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          InfoBox(
+            label: 'What I’m ready for now',
+            text: readyFor,
+            outlined: true,
+          ),
+        ],
         if (bio != null && bio.isNotEmpty) ...[
           const SizedBox(height: 14),
           InfoBox(label: 'About me', text: bio, outlined: true),
+        ],
+        if (member.interests.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [for (final t in member.interests) Tag.sand(t, size: 13)],
+          ),
         ],
         if (reasons != null && reasons.isNotEmpty) ...[
           const SizedBox(height: 18),
