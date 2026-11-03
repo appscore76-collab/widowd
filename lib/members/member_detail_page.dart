@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers.dart';
 import '../app/router.dart';
+import '../chat/chat_nav.dart';
 
 import '../landing/landing_style.dart';
 import '../ui/app_theme.dart';
@@ -37,11 +38,18 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
   @override
   Widget build(BuildContext context) {
     final liked = ref.watch(likedIdsProvider);
+    final matched = ref.watch(matchedConversationsProvider);
+    // A like or a match reveals the photo; a match also offers "Message".
+    bool unlocked(Member m) => liked.contains(m.id) || matched.containsKey(m.id);
+    VoidCallback? messageAction(Member m) =>
+        matched.containsKey(m.id) ? () => openChatWith(context, ref, m) : null;
+
     if (widget.member != null) {
       return _MemberView(
         member: widget.member!,
         reasons: widget.reasons,
-        locked: !liked.contains(widget.member!.id),
+        locked: !unlocked(widget.member!),
+        onMessage: messageAction(widget.member!),
       );
     }
     return FutureBuilder<Member?>(
@@ -68,7 +76,11 @@ class _MemberDetailPageState extends ConsumerState<MemberDetailPage> {
             ),
           );
         }
-        return _MemberView(member: member, locked: !liked.contains(member.id));
+        return _MemberView(
+          member: member,
+          locked: !unlocked(member),
+          onMessage: messageAction(member),
+        );
       },
     );
   }
@@ -79,15 +91,23 @@ void _leave(BuildContext context) =>
 
 /// A member's full profile: photo on top, details on a rounded sheet.
 class _MemberView extends StatelessWidget {
-  const _MemberView({required this.member, this.reasons, this.locked = false});
+  const _MemberView({
+    required this.member,
+    this.reasons,
+    this.locked = false,
+    this.onMessage,
+  });
 
   final Member member;
 
   /// Why the system suggested this member, when opened from a suggestion.
   final List<String>? reasons;
 
-  /// Blur the photo until the viewer has liked this member.
+  /// Blur the photo until the viewer has liked or matched this member.
   final bool locked;
+
+  /// Opens the conversation; shown only when the viewer is matched with them.
+  final VoidCallback? onMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +132,17 @@ class _MemberView extends StatelessWidget {
         if (city != null && city.isNotEmpty) ...[
           const SizedBox(height: 3),
           Text(city, style: jakarta(14, color: AppColors.muted)),
+        ],
+        if (onMessage != null) ...[
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: onMessage,
+              icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+              label: const Text('Message'),
+            ),
+          ),
         ],
         if (member.photoVerified || member.idVerified) ...[
           const SizedBox(height: 14),

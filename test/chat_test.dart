@@ -10,6 +10,7 @@ import 'package:widowd/chat/chat.dart';
 import 'package:widowd/chat/chat_repository.dart';
 import 'package:widowd/chat/chat_widgets.dart';
 import 'package:widowd/main.dart';
+import 'package:widowd/members/member.dart' show Suggestion;
 
 import 'members_test.dart' show FakeMembersRepository, listedMe, robert;
 import 'test_fonts.dart';
@@ -33,6 +34,14 @@ class FakeChatRepository implements ChatRepository {
 
   @override
   Future<List<Conversation>> conversations() async => initialConversations;
+
+  @override
+  Future<int?> conversationIdForPeer(String peerId) async {
+    for (final c in initialConversations) {
+      if (c.peer.id == peerId) return c.id;
+    }
+    return null;
+  }
 
   StreamController<List<Message>> _ctrl(int id) =>
       _controllers.putIfAbsent(id, () {
@@ -88,6 +97,7 @@ void main() {
   Future<void> pump(
     WidgetTester tester, {
     required FakeChatRepository chat,
+    FakeMembersRepository? members,
     Size size = const Size(1200, 1600),
   }) async {
     tester.view.physicalSize = size;
@@ -96,7 +106,7 @@ void main() {
     await tester.pumpWidget(
       WidowdApp(
         auth: newAuth(),
-        repository: () => FakeMembersRepository(me: listedMe),
+        repository: () => members ?? FakeMembersRepository(me: listedMe),
         chatRepository: () => chat,
         session: AuthSession.fixed(userId: 'me'),
         landingVideos: false,
@@ -187,6 +197,49 @@ void main() {
 
     expect(chat.sent.map((s) => s.body), contains('Hello Robert'));
     expect(find.text('Hello Robert'), findsWidgets);
+  });
+
+  testWidgets('a matched suggestion unlocks the photo and opens chat', (
+    tester,
+  ) async {
+    final chat = FakeChatRepository(
+      initialConversations: [convWithRobert(last: 'Hi Ann')],
+      messages: {
+        10: [
+          Message(
+            id: 1,
+            conversationId: 10,
+            senderId: 'robert',
+            body: 'Hi Ann',
+            createdAt: DateTime(2026, 11, 3),
+          ),
+        ],
+      },
+    );
+    final members = FakeMembersRepository(
+      me: listedMe,
+      members: const [robert],
+      suggested: [
+        Suggestion(
+          matchId: 1,
+          member: robert,
+          status: 'matched',
+          reasons: const [],
+          createdAt: DateTime(2026, 10, 31),
+        ),
+      ],
+    );
+    await pump(tester, chat: chat, members: members);
+
+    // Matched: the photo is unlocked and a Message shortcut is shown.
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+    expect(find.text('You’re matched'), findsOneWidget);
+    expect(find.text('Message'), findsOneWidget);
+
+    await tester.tap(find.text('Message'));
+    await tester.pumpAndSettle();
+    // The conversation opened.
+    expect(find.byTooltip('Send'), findsOneWidget);
   });
 
   testWidgets('unread messages badge the Chats tab', (tester) async {

@@ -51,6 +51,37 @@ final chatRepositoryProvider = Provider<ChatRepository>(
   (ref) => throw UnimplementedError('chatRepositoryProvider is not overridden'),
 );
 
+/// Members the signed-in member is matched with, mapped to their conversation
+/// id. Drives both the photo unlock (a match reveals the photo, like a like
+/// does) and the "Message" shortcut from Discover and profiles. Loads in the
+/// background; failures (and tests without a chat repository) leave it empty.
+final matchedConversationsProvider =
+    NotifierProvider<MatchedConversationsNotifier, Map<String, int>>(
+      MatchedConversationsNotifier.new,
+    );
+
+class MatchedConversationsNotifier extends Notifier<Map<String, int>> {
+  @override
+  Map<String, int> build() {
+    _load();
+    return const {};
+  }
+
+  Future<void> _load() async {
+    try {
+      final conversations = await ref
+          .read(chatRepositoryProvider)
+          .conversations();
+      state = {for (final c in conversations) c.peer.id: c.id};
+    } catch (_) {
+      // Keep what we have; photos just stay as they are until a reload.
+    }
+  }
+
+  /// Reloads after a new match (so the new conversation is known).
+  Future<void> refresh() => _load();
+}
+
 /// Total unread messages across all conversations, for the Chats tab badge.
 /// Starts at 0 and loads in the background; failures leave it at 0 so the app
 /// (and tests without a chat repository) keep working.

@@ -11,6 +11,10 @@ abstract class ChatRepository {
   /// The signed-in member's conversations, newest activity first.
   Future<List<Conversation>> conversations();
 
+  /// The conversation id for the matched member [peerId], or null if there
+  /// isn't one (not matched, or it isn't ready yet).
+  Future<int?> conversationIdForPeer(String peerId);
+
   /// Live messages in a conversation, oldest first.
   Stream<List<Message>> messageStream(int conversationId);
 
@@ -77,6 +81,19 @@ class SupabaseChatRepository implements ChatRepository {
       for (var i = 0; i < conversations.length; i++)
         conversations[i].withPeer(peers[i]),
     ];
+  }
+
+  @override
+  Future<int?> conversationIdForPeer(String peerId) async {
+    // RLS returns only conversations the caller is part of, so filtering by the
+    // peer being a participant yields our conversation with them, if any.
+    final rows = await _client
+        .from('conversations')
+        .select('id')
+        .or('user_a.eq.$peerId,user_b.eq.$peerId')
+        .limit(1);
+    if (rows.isEmpty) return null;
+    return rows.first['id'] as int;
   }
 
   @override
