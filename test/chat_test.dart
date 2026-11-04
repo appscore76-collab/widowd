@@ -10,7 +10,6 @@ import 'package:widowd/chat/chat.dart';
 import 'package:widowd/chat/chat_repository.dart';
 import 'package:widowd/chat/chat_widgets.dart';
 import 'package:widowd/main.dart';
-import 'package:widowd/members/member.dart' show Suggestion;
 
 import 'members_test.dart' show FakeMembersRepository, listedMe, robert;
 import 'test_fonts.dart';
@@ -33,7 +32,10 @@ class FakeChatRepository implements ChatRepository {
   String get currentUserId => 'me';
 
   @override
-  Future<List<Conversation>> conversations() async => initialConversations;
+  Future<List<Conversation>> conversations({
+    int offset = 0,
+    int limit = 20,
+  }) async => initialConversations.skip(offset).take(limit).toList();
 
   @override
   Future<int?> conversationIdForPeer(String peerId) async {
@@ -199,47 +201,21 @@ void main() {
     expect(find.text('Hello Robert'), findsWidgets);
   });
 
-  testWidgets('a matched suggestion unlocks the photo; Message is Plus-gated', (
+  testWidgets('New matches strip shows unmessaged matches and opens chat', (
     tester,
   ) async {
+    // A match with no messages yet is a "new match".
     final chat = FakeChatRepository(
-      initialConversations: [convWithRobert(last: 'Hi Ann')],
-      messages: {
-        10: [
-          Message(
-            id: 1,
-            conversationId: 10,
-            senderId: 'robert',
-            body: 'Hi Ann',
-            createdAt: DateTime(2026, 11, 3),
-          ),
-        ],
-      },
+      initialConversations: [convWithRobert(last: null)],
     );
-    final members = FakeMembersRepository(
-      me: listedMe,
-      members: const [robert],
-      suggested: [
-        Suggestion(
-          matchId: 1,
-          member: robert,
-          status: 'matched',
-          reasons: const [],
-          createdAt: DateTime(2026, 10, 31),
-        ),
-      ],
-    );
-    await pump(tester, chat: chat, members: members);
+    await pump(tester, chat: chat);
 
-    // Matched: the photo is unlocked and a Message shortcut is shown.
-    expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
-    expect(find.text('You’re matched'), findsOneWidget);
-    expect(find.text('Message'), findsOneWidget);
-
-    // Messaging is a Plus feature: it opens the Plus upsell, not the chat.
-    await tester.tap(find.text('Message'));
-    await tester.pumpAndSettle();
-    expect(find.text('Widowd Plus'), findsOneWidget);
+    await tapText(tester, 'Chats');
+    expect(find.text('New matches'), findsOneWidget);
+    // The strip renders above the conversation list, so the first "Robert".
+    await tapText(tester, 'Robert');
+    // Opened the conversation (composer present).
+    expect(find.byTooltip('Send'), findsOneWidget);
   });
 
   testWidgets('the member profile unlocks on a match; Message is Plus-gated', (
