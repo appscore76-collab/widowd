@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers.dart';
-import '../chat/chat_nav.dart';
 import '../landing/landing_style.dart';
+import '../plus/plus.dart';
 import '../ui/app_theme.dart';
 import '../ui/app_widgets.dart';
 import 'member.dart';
@@ -85,7 +85,8 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
     }
   }
 
-  void _message(Suggestion s) => openChatWith(context, ref, s.member);
+  // Messaging is a Widowd Plus feature (design screen 05/17).
+  void _message(Suggestion s) => showPlusSheet(context, feature: 'Messaging');
 
   void _toast(String message) =>
       ScaffoldMessenger.of(context)
@@ -151,8 +152,9 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Like someone for who they are — their photo unlocks once '
-                    'you do. New suggestions arrive daily.',
+                    'Like someone for who they are. When you both like each '
+                    'other, you match and their photos unlock. New suggestions '
+                    'arrive daily.',
                     style: jakarta(14, color: AppColors.muted, height: 1.5),
                   ),
                 ],
@@ -161,24 +163,22 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            sliver: SliverGrid.builder(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 440,
-                mainAxisExtent: 388,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+            sliver: SliverToBoxAdapter(
+              child: AutoGrid(
+                minItemWidth: 420,
+                gapX: 16,
+                gapY: 16,
+                children: [
+                  for (final s in items)
+                    SuggestionCard(
+                      suggestion: s,
+                      liked: liked.contains(s.member.id),
+                      onLike: () => _like(s),
+                      onPass: () => _pass(s),
+                      onMessage: () => _message(s),
+                    ),
+                ],
               ),
-              itemCount: items.length,
-              itemBuilder: (context, i) {
-                final s = items[i];
-                return SuggestionCard(
-                  suggestion: s,
-                  liked: liked.contains(s.member.id),
-                  onLike: () => _like(s),
-                  onPass: () => _pass(s),
-                  onMessage: () => _message(s),
-                );
-              },
             ),
           ),
         ],
@@ -207,12 +207,8 @@ class SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = suggestion.member;
-    final bio = m.bio?.trim();
-    final meta = memberMeta(m);
     final matched = suggestion.status == 'matched';
-    final reasons = suggestion.reasons
-        .where((r) => r != 'ID verified' && r != 'Photo verified')
-        .toList();
+    final meta = _metaLine(m);
     void open() => openMember(context, m, reasons: suggestion.reasons);
 
     return AppCard(
@@ -227,8 +223,8 @@ class SuggestionCard extends StatelessWidget {
                 child: MemberPhoto(
                   member: m,
                   borderRadius: BorderRadius.circular(30),
-                  // A match reveals the photo too, not just a like.
-                  locked: !(liked || matched),
+                  // The photo is revealed only once you've matched.
+                  locked: !matched,
                 ),
               ),
               const SizedBox(width: 12),
@@ -240,11 +236,7 @@ class SuggestionCard extends StatelessWidget {
                       memberHeadline(m),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: jakarta(
-                        21,
-                        weight: 800,
-                        letterSpacingEm: -0.3 / 21,
-                      ),
+                      style: jakarta(21, weight: 800, letterSpacingEm: -0.3 / 21),
                     ),
                     const SizedBox(height: 4),
                     BadgeRow(member: m),
@@ -253,31 +245,43 @@ class SuggestionCard extends StatelessWidget {
               ),
             ],
           ),
-          if (meta.isNotEmpty) ...[
+          if (meta != null) ...[
             const SizedBox(height: 12),
-            Text(
-              meta,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: jakarta(13, color: AppColors.muted),
+            Text(meta, style: jakarta(13, color: AppColors.muted, height: 1.4)),
+          ],
+          if (m.readyFor != null && m.readyFor!.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            InfoBox(
+              label: 'What I’m ready for now',
+              text: m.readyFor!.trim(),
+              maxLines: 3,
             ),
           ],
-          const SizedBox(height: 12),
-          InfoBox(
-            label: 'About me',
-            text: bio == null || bio.isEmpty
-                ? '${m.displayName ?? 'They'} hasn’t written anything yet.'
-                : bio,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [for (final r in reasons) Tag.sand(r)],
-          ),
-          const Spacer(),
-          const SizedBox(height: 10),
+          if (m.perfectSunday != null && m.perfectSunday!.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            InfoBox(
+              label: 'A perfect Sunday',
+              text: m.perfectSunday!.trim(),
+              maxLines: 3,
+            ),
+          ],
+          if (m.intent != null || m.interests.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (m.intent != null)
+                  Tag(
+                    intentLabel(m.intent!),
+                    background: AppColors.tealTint,
+                    color: AppColors.teal,
+                  ),
+                for (final t in m.interests) Tag.sand(t),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
           if (matched)
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -302,6 +306,7 @@ class SuggestionCard extends StatelessWidget {
                   icon: Icons.chat_bubble_rounded,
                   label: 'Message',
                   filled: true,
+                  locked: true,
                   onPressed: onMessage,
                 ),
               ],
@@ -316,7 +321,7 @@ class SuggestionCard extends StatelessWidget {
                     onPressed: onPass,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _ActionButton(
                     icon: liked
@@ -327,11 +332,35 @@ class SuggestionCard extends StatelessWidget {
                     onPressed: liked ? null : onLike,
                   ),
                 ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    label: 'Message',
+                    locked: true,
+                    onPressed: onMessage,
+                  ),
+                ),
               ],
             ),
         ],
       ),
     );
+  }
+
+  /// "Chester · Widowed 2–5 years · 2 children (grown up)".
+  static String? _metaLine(Member m) {
+    final parts = <String>[
+      if (m.city != null && m.city!.trim().isNotEmpty) m.city!.trim(),
+      if (m.journey != null && journeyLabel(m.journey!) != null)
+        'Widowed ${journeyLabel(m.journey!)!.toLowerCase()}',
+      if (m.childrenCount != null)
+        m.childrenAges != null
+            ? '${childrenLabel(m.childrenCount!)} '
+                  '(${childrenAgesLabel(m.childrenAges!).toLowerCase()})'
+            : childrenLabel(m.childrenCount!),
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 }
 
@@ -341,6 +370,7 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.filled = false,
+    this.locked = false,
   });
 
   final IconData icon;
@@ -348,12 +378,16 @@ class _ActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool filled;
 
+  /// Shows a small lock, for Plus-gated actions like Message.
+  final bool locked;
+
   @override
   Widget build(BuildContext context) {
     final fg = filled ? Colors.white : AppColors.ink;
     final bg = filled ? AppColors.teal : Colors.white;
     return Semantics(
       button: true,
+      label: locked ? '$label — Widowd Plus' : label,
       child: Material(
         color: onPressed == null ? bg.withValues(alpha: 0.5) : bg,
         shape: RoundedRectangleBorder(
@@ -372,7 +406,18 @@ class _ActionButton extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: fg),
                 const SizedBox(width: 8),
-                Text(label, style: jakarta(14, weight: 800, color: fg)),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: jakarta(14, weight: 800, color: fg),
+                  ),
+                ),
+                if (locked) ...[
+                  const SizedBox(width: 5),
+                  Icon(Icons.lock_rounded, size: 13, color: fg),
+                ],
               ],
             ),
           ),

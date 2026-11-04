@@ -48,6 +48,24 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
   late String? _gender = widget.initial?.gender;
   late final Set<String> _interestedIn = {...?widget.initial?.interestedIn};
 
+  // Enrichment fields (design 02/03/05/07).
+  late String? _intent = widget.initial?.intent;
+  late String? _journey = widget.initial?.journey;
+  late int? _childrenCount = widget.initial?.childrenCount;
+  late String? _childrenAges = widget.initial?.childrenAges;
+  late String? _childrenAtHome = widget.initial?.childrenAtHome;
+  late String? _openToChildren = widget.initial?.openToChildren;
+  late final _readyFor = TextEditingController(text: widget.initial?.readyFor);
+  late final _perfectSunday = TextEditingController(
+    text: widget.initial?.perfectSunday,
+  );
+  late final _occupation = TextEditingController(
+    text: widget.initial?.occupation,
+  );
+  late final _interestsField = TextEditingController(
+    text: (widget.initial?.interests ?? const []).join(', '),
+  );
+
   int _step = 1;
   Uint8List? _newPhoto;
   String? _newPhotoType;
@@ -61,6 +79,10 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
     _birthYear.dispose();
     _city.dispose();
     _bio.dispose();
+    _readyFor.dispose();
+    _perfectSunday.dispose();
+    _occupation.dispose();
+    _interestsField.dispose();
     super.dispose();
   }
 
@@ -150,6 +172,13 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
       }
       String? optional(TextEditingController c) =>
           c.text.trim().isEmpty ? null : c.text.trim();
+      final interests = _interestsField.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toSet()
+          .take(12)
+          .toList();
       await widget.repository.saveProfile(
         ProfileDraft(
           displayName: _name.text.trim(),
@@ -159,6 +188,16 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
           photoPath: photoPath!,
           city: optional(_city),
           bio: optional(_bio),
+          intent: _intent,
+          journey: _journey,
+          childrenCount: _childrenCount,
+          childrenAges: _childrenAges,
+          childrenAtHome: _childrenAtHome,
+          openToChildren: _openToChildren,
+          readyFor: optional(_readyFor),
+          perfectSunday: optional(_perfectSunday),
+          occupation: optional(_occupation),
+          interests: interests,
         ),
       );
       if (previousPhoto != null && previousPhoto != photoPath) {
@@ -272,6 +311,133 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
         _triedSubmit && _interestedIn.isEmpty ? 'Choose at least one' : null,
       ),
     ],
+  );
+
+  Widget _intentChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      for (final i in datingIntents) ...[
+        ChoiceCard(
+          label: intentLabel(i),
+          selected: _intent == i,
+          onTap: () => setState(() => _intent = _intent == i ? null : i),
+        ),
+        const SizedBox(height: 10),
+      ],
+    ],
+  );
+
+  Widget _chipRow(
+    List<String> options,
+    String? selected,
+    String Function(String) label,
+    void Function(String?) onPick,
+  ) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final o in options)
+        _SelectChip(
+          label: label(o),
+          selected: selected == o,
+          onTap: () => onPick(selected == o ? null : o),
+        ),
+    ],
+  );
+
+  Widget _stepButton(IconData icon, VoidCallback onTap, {bool filled = false}) =>
+      SizedBox.square(
+        dimension: 44,
+        child: Material(
+          color: filled ? AppColors.teal : Colors.white,
+          shape: CircleBorder(
+            side: filled
+                ? BorderSide.none
+                : const BorderSide(color: AppColors.border),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: Icon(
+              icon,
+              size: 22,
+              color: filled ? Colors.white : AppColors.ink,
+            ),
+          ),
+        ),
+      );
+
+  Widget _childrenStepper() {
+    final count = _childrenCount ?? 0;
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Number of children', style: jakarta(15, weight: 700)),
+              Text(
+                _childrenCount == null ? 'Not set' : childrenLabel(count),
+                style: jakarta(13, color: AppColors.muted),
+              ),
+            ],
+          ),
+        ),
+        _stepButton(
+          Icons.remove_rounded,
+          () => setState(() => _childrenCount = (count - 1).clamp(0, 5)),
+        ),
+        SizedBox(
+          width: 44,
+          child: Text(
+            _childrenCount == null ? '–' : (count >= 5 ? '5+' : '$count'),
+            textAlign: TextAlign.center,
+            style: jakarta(22, weight: 800),
+          ),
+        ),
+        _stepButton(
+          Icons.add_rounded,
+          () => setState(() => _childrenCount = (count + 1).clamp(0, 5)),
+          filled: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _promptField(
+    TextEditingController controller,
+    String label,
+    String hint,
+  ) => TextFormField(
+    controller: controller,
+    decoration: InputDecoration(
+      labelText: label,
+      hintText: hint,
+      alignLabelWithHint: true,
+    ),
+    minLines: 2,
+    maxLines: 4,
+    maxLength: 280,
+    textCapitalization: TextCapitalization.sentences,
+  );
+
+  Widget _occupationField() => TextFormField(
+    controller: _occupation,
+    decoration: const InputDecoration(
+      labelText: 'Work (optional)',
+      helperText: 'Shown on your profile, e.g. Retired teacher',
+    ),
+    maxLength: 80,
+    textCapitalization: TextCapitalization.words,
+  );
+
+  Widget _interestsFieldWidget() => TextFormField(
+    controller: _interestsField,
+    decoration: const InputDecoration(
+      labelText: 'Interests (optional)',
+      helperText: 'Separate with commas, e.g. Gardening, Choir',
+    ),
+    textCapitalization: TextCapitalization.words,
   );
 
   Widget _photoTile({double size = 160}) {
@@ -564,6 +730,74 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
                   ]),
                   section('I am', [_genderChoices()]),
                   section('Interested in', [_interestChoices()]),
+                  section('Your intent', [
+                    _intentChoices(),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Where are you in your journey?',
+                      style: jakarta(15, weight: 700),
+                    ),
+                    const SizedBox(height: 10),
+                    _chipRow(
+                      journeyOptions,
+                      _journey,
+                      journeyChipLabel,
+                      (v) => setState(() => _journey = v),
+                    ),
+                  ]),
+                  section('Family', [
+                    _childrenStepper(),
+                    const SizedBox(height: 16),
+                    Text('Their ages', style: jakarta(14, weight: 700)),
+                    const SizedBox(height: 8),
+                    _chipRow(
+                      childrenAgeOptions,
+                      _childrenAges,
+                      childrenAgesLabel,
+                      (v) => setState(() => _childrenAges = v),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Living at home?', style: jakarta(14, weight: 700)),
+                    const SizedBox(height: 8),
+                    _chipRow(
+                      childrenAtHomeOptions,
+                      _childrenAtHome,
+                      childrenAtHomeLabel,
+                      (v) => setState(() => _childrenAtHome = v),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Open to a partner with children?',
+                      style: jakarta(14, weight: 700),
+                    ),
+                    const SizedBox(height: 8),
+                    _chipRow(
+                      openToChildrenOptions,
+                      _openToChildren,
+                      openToChildrenLabel,
+                      (v) => setState(() => _openToChildren = v),
+                    ),
+                  ]),
+                  section('Prompts', [
+                    _promptField(
+                      _readyFor,
+                      'What I’m ready for now',
+                      'Someone to share slow breakfasts, garden centres and '
+                          'the occasional road trip with.',
+                    ),
+                    const SizedBox(height: 12),
+                    _promptField(
+                      _perfectSunday,
+                      'A perfect Sunday',
+                      'A long walk, a roast, then a video call with the '
+                          'grandchildren.',
+                    ),
+                  ]),
+                  section('Work & interests', [
+                    _occupationField(),
+                    const SizedBox(height: 12),
+                    _interestsFieldWidget(),
+                  ]),
                   section('Your story', [_bioField()]),
                   if (_error != null) ...[
                     FormMessage(_error!),
@@ -575,6 +809,50 @@ class _ProfileEditorPageState extends State<ProfileEditorPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A single-select pill used for journey, children ages and similar choices.
+class _SelectChip extends StatelessWidget {
+  const _SelectChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected ? AppColors.teal : Colors.white,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: selected ? AppColors.teal : AppColors.border,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            child: Text(
+              label,
+              style: jakarta(
+                14,
+                weight: selected ? 700 : 600,
+                color: selected ? Colors.white : AppColors.ink,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -310,7 +310,6 @@ void main() {
       final age = DateTime.now().year - 1959;
       expect(find.text('Today’s suggestions'), findsOneWidget);
       expect(find.text('Robert, $age'), findsOneWidget);
-      expect(find.text('Also lives in Leeds'), findsOneWidget);
       expect(find.text('ID checked'), findsOneWidget);
 
       await tapText(tester, 'Robert, $age');
@@ -345,8 +344,17 @@ void main() {
       return r;
     }
 
-    testWidgets('photo is locked until you like, then unlocks', (tester) async {
+    testWidgets('a like alone keeps the photo locked', (tester) async {
       await pumpDiscoverWith(tester, repoWithRobert());
+
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+      await tapText(tester, 'Like');
+      // No reciprocal like, so no match — the photo stays locked.
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+    });
+
+    testWidgets('a match unlocks the photo', (tester) async {
+      await pumpDiscoverWith(tester, repoWithRobert(reciprocal: {'robert'}));
 
       expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
       await tapText(tester, 'Like');
@@ -419,8 +427,8 @@ void main() {
 
     testWidgets('Me shows the profile editor and saves', (tester) async {
       final repo = FakeMembersRepository(me: listedMe);
-      // Tall enough that typing doesn't scroll the save button away.
-      await pumpShell(tester, repo, size: const Size(1200, 2400));
+      // Tall enough that the (now longer) editor's save button stays on screen.
+      await pumpShell(tester, repo, size: const Size(1200, 4400));
 
       await tapText(tester, 'Me');
       expect(find.text('My profile'), findsOneWidget);

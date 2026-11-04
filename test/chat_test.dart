@@ -199,7 +199,7 @@ void main() {
     expect(find.text('Hello Robert'), findsWidgets);
   });
 
-  testWidgets('a matched suggestion unlocks the photo and opens chat', (
+  testWidgets('a matched suggestion unlocks the photo; Message is Plus-gated', (
     tester,
   ) async {
     final chat = FakeChatRepository(
@@ -236,10 +236,45 @@ void main() {
     expect(find.text('You’re matched'), findsOneWidget);
     expect(find.text('Message'), findsOneWidget);
 
+    // Messaging is a Plus feature: it opens the Plus upsell, not the chat.
     await tester.tap(find.text('Message'));
     await tester.pumpAndSettle();
-    // The conversation opened.
-    expect(find.byTooltip('Send'), findsOneWidget);
+    expect(find.text('Widowd Plus'), findsOneWidget);
+  });
+
+  testWidgets('the member profile unlocks on a match; Message is Plus-gated', (
+    tester,
+  ) async {
+    final chat = FakeChatRepository(
+      initialConversations: [convWithRobert(last: 'Hi')],
+      messages: {
+        10: [
+          Message(
+            id: 1,
+            conversationId: 10,
+            senderId: 'robert',
+            body: 'Hi',
+            createdAt: DateTime(2026, 11, 3),
+          ),
+        ],
+      },
+    );
+    await pump(
+      tester,
+      chat: chat,
+      members: FakeMembersRepository(me: listedMe, members: const [robert]),
+    );
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/app/members/robert');
+    await tester.pumpAndSettle();
+
+    // Matched: photo unlocked; Message is a Plus feature (opens the upsell).
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Message'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Message'));
+    await tester.pumpAndSettle();
+    expect(find.text('Widowd Plus'), findsOneWidget);
   });
 
   testWidgets('unread messages badge the Chats tab', (tester) async {
