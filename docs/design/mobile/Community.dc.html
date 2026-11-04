@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Community</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; padding: 56px 0 0">
+  <div style="padding: 0 20px; display: flex; align-items: center; gap: 10px">
+    <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.6px">Community</h1>
+      <span style="font-size: 12px; font-weight: 700; color: #7A4B0E">Peer support · not for dating · Free</span>
+    </span>
+    <a href="NewPost.dc.html" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 20px; background: #1E5A57; color: #FFFFFF; font-size: 14px; font-weight: 700; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Start
+    </a>
+  </div>
+
+  <div style="margin: 12px 20px 0; padding: 12px 14px; border-radius: 16px; background: #1B2421; color: #FFFFFF; display: flex; align-items: center; gap: 12px">
+    <span style="flex: none; width: 38px; height: 38px; border-radius: 19px; background: #33433F; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2C27B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"></path><path d="M4 4l16 16"></path></svg>
+    </span>
+    <span style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 14px; font-weight: 800">You appear as “Quiet Heron”</span>
+      <span style="font-size: 12px; line-height: 1.4; color: #C9D6D2">A random nickname. Your dating profile, name and photos are never linked here. No contact details.</span>
+    </span>
+  </div>
+
+  <div role="tablist" aria-label="Topics" style="display: flex; gap: 8px; padding: 12px 20px 4px; overflow-x: auto; scrollbar-width: none">
+    <sc-for list="{{topics}}" as="t" hint-placeholder-count="5">
+      <button type="button" role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+    </sc-for>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 8px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{posts}}" as="p" hint-placeholder-count="4">
+      <li>
+        <a href="Thread.dc.html" aria-label="{{p.aria}}" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 18px; background: #FFFFFF; text-decoration: none; color: #1B2421">
+          <span style="display: flex; align-items: center; gap: 8px">
+            <span style="{{p.dot}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B2421" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+            </span>
+            <span style="font-size: 12px; font-weight: 700; color: #3F4A46">{{p.alias}}</span>
+            <span style="font-size: 12px; color: #5B6763">· {{p.ago}}</span>
+            <span style="flex: 1"></span>
+            <span style="padding: 2px 8px; border-radius: 9px; background: #FBF0DF; color: #7A4B0E; font-size: 11px; font-weight: 700">{{p.topicLabel}}</span>
+          </span>
+          <span style="font-size: 16px; font-weight: 800; line-height: 1.3">{{p.title}}</span>
+          <span style="font-size: 13px; line-height: 1.45; color: #4F5C58; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{p.snippet}}</span>
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #1E5A57">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>
+            {{p.replies}} replies · last reply {{p.last}}
+          </span>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; box-sizing: border-box; padding-top: 8px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; justify-content: space-around; align-items: flex-start">
+    <a href="Discover.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>Discover</a>
+    <a href="Search.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Search</a>
+    <a href="Community.dc.html" aria-current="page" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #1E5A57; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 9h2a2 2 0 012 2v5a2 2 0 01-2 2h-1v3l-3-3h-4a2 2 0 01-2-2v-1"></path><path d="M3 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-3 3v-3H5a2 2 0 01-2-2z"></path></svg>Community</a>
+    <a href="Matches.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Chats</a>
+    <a href="Incognito.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>Me</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { topic: 'all' };
+  }
+  renderVals() {
+    const s = this.state;
+    const topicDefs = [['all', 'All'], ['grief', 'Grief & healing'], ['dating', 'Dating again'], ['family', 'Family'], ['life', 'Everyday life']];
+    const label = {};
+    topicDefs.forEach(([id, l]) => { label[id] = l; });
+    const tints = ['#C8D9D3', '#E6D9EC', '#F3DECB', '#D3DDEE', '#DCE6E2'];
+    const all = [
+      { topic: 'dating', alias: 'Gentle Robin', ago: '2h', title: 'How did you know you were ready to date again?', snippet: 'It’s been three years since Tom passed. Some days I feel ready, other days I feel guilty for even thinking about it.', replies: 24, last: '5m ago' },
+      { topic: 'family', alias: 'Steady Oak', ago: '5h', title: 'Telling grown-up children you’re seeing someone', snippet: 'My daughter took it well, my son less so. How did your families react, and what helped?', replies: 17, last: '22m ago' },
+      { topic: 'grief', alias: 'Morning Lark', ago: 'Yesterday', title: 'Anniversaries still knock me sideways', snippet: 'Next week would have been our 35th. I’d love to hear how others mark the day.', replies: 41, last: '1h ago' },
+      { topic: 'life', alias: 'Silver Birch', ago: '2d', title: 'Learning to cook for one (and enjoying it)', snippet: 'Share your easy favourites! Mine is a one-pan chicken traybake.', replies: 33, last: '3h ago' },
+      { topic: 'dating', alias: 'Kind Wren', ago: '3d', title: 'First date nerves after 30 years', snippet: 'Coffee on Saturday. What did you talk about on yours?', replies: 19, last: 'Yesterday' }
+    ];
+    const posts = all
+      .filter((p) => s.topic === 'all' || p.topic === s.topic)
+      .slice(0, 4)
+      .map((p, i) => Object.assign({}, p, {
+        topicLabel: label[p.topic],
+        aria: p.title + ', started by ' + p.alias + ', ' + p.replies + ' replies',
+        dot: 'flex: none; width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ' + tints[i % tints.length]
+      }));
+    const topics = topicDefs.map(([id, l]) => ({
+      label: l, selected: s.topic === id ? 'true' : 'false',
+      pick: () => this.setState({ topic: id }),
+      style: 'flex: none; height: 36px; padding: 0 14px; border-radius: 18px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (s.topic === id ? 'background: #1E5A57; color: #FFFFFF; border: 1px solid #1E5A57;' : 'background: #FFFFFF; color: #1B2421; border: 1px solid #C9D3CF;')
+    }));
+    return { topics, posts };
+  }
+}
+</script>
+</body>
+</html>

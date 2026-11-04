@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Community discussion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <header style="padding: 52px 8px 8px; background: #FFFFFF; border-bottom: 1px solid #E3E8E6; display: flex; align-items: center; gap: 4px">
+    <a href="Community.dc.html" aria-label="Back to Community" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 800">Discussion</span>
+      <span style="font-size: 12px; color: #5B6763">Peer support · Dating again · {{replyCount}} replies</span>
+    </span>
+    <button type="button" aria-label="Report this discussion" onClick="{{reportThread}}" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; color: #1B2421; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4h12l-1.5 4L16 12H4"></path></svg>
+    </button>
+  </header>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 10px; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{threadReported}}" hint-placeholder-val="{{ false }}">
+      <p role="status" style="margin: 0; padding: 10px 12px; border-radius: 12px; background: #FDE8E8; color: #9B1C1C; font-size: 13px; font-weight: 700">Thanks — our moderators will review this discussion.</p>
+    </sc-if>
+
+    <article style="padding: 16px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px">
+      <span style="display: flex; align-items: center; gap: 8px">
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: #C8D9D3; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B2421" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg></span>
+        <span style="font-size: 13px; font-weight: 800; white-space: nowrap">Gentle Robin</span>
+        <span style="font-size: 12px; color: #5B6763; white-space: nowrap">· started 2h ago</span>
+      </span>
+      <h1 style="margin: 0; font-size: 19px; line-height: 1.3; font-weight: 800">How did you know you were ready to date again?</h1>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3F4A46">It’s been three years since Tom passed. Some days I feel ready, other days I feel guilty for even thinking about it. How did you know?</p>
+    </article>
+
+    <sc-for list="{{replies}}" as="r" hint-placeholder-count="3">
+      <article style="{{r.cardStyle}}">
+        <span style="display: flex; align-items: center; gap: 8px">
+          <span style="{{r.dot}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1B2421" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg></span>
+          <span style="font-size: 13px; font-weight: 800">{{r.alias}}</span>
+          <span style="font-size: 12px; color: #5B6763">· {{r.ago}}</span>
+        </span>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #1B2421">{{r.text}}</p>
+        <span style="display: flex; align-items: center; gap: 4px; margin-left: -8px">
+          <button type="button" aria-pressed="{{r.pressed}}" onClick="{{r.toggleHelpful}}" style="{{r.helpStyle}}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.7 5c2 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.3 5 17.3 5c3.4 0 5.5 3.4 4.2 6.7C19.5 16.4 12 21 12 21z"></path></svg>
+            Helpful · {{r.count}}
+          </button>
+          <sc-if value="{{r.canReport}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{r.report}}" style="height: 36px; padding: 0 10px; border: 0; background: transparent; font-family: inherit; font-size: 12px; font-weight: 700; color: #5B6763; cursor: pointer">Report</button>
+          </sc-if>
+          <sc-if value="{{r.reported}}" hint-placeholder-val="{{ false }}">
+            <span style="padding: 0 10px; font-size: 12px; font-weight: 700; color: #9B1C1C">Reported</span>
+          </sc-if>
+        </span>
+      </article>
+    </sc-for>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E3E8E6; padding: 10px 12px 30px; display: flex; flex-direction: column; gap: 8px">
+    <sc-if value="{{blockedContact}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 12px; background: #FDE8E8; color: #9B1C1C; font-size: 13px; line-height: 1.4; font-weight: 700; display: flex; gap: 8px; align-items: flex-start">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>
+        Contact details can’t be shared in Community. Remove the {{contactKind}} to post.
+      </p>
+    </sc-if>
+    <sc-if value="{{notBlockedContact}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #5B6763">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+        Replying as Quiet Heron · support only, no contact details
+      </span>
+    </sc-if>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <label for="reply-box" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Your reply</label>
+      <input id="reply-box" type="text" value="{{draft}}" onInput="{{onDraft}}" placeholder="Add a kind reply…" style="{{inputStyle}}">
+      <button type="button" aria-label="Post reply" onClick="{{send}}" disabled="{{sendDisabled}}" style="{{sendStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      draft: '',
+      threadReported: false,
+      replies: [
+        { id: 1, alias: 'Morning Lark', ago: '1h', text: 'For me it was when I caught myself laughing at a joke and wanting to tell someone about it. The guilt still visits, but it doesn’t stay as long.', count: 18, mine: false },
+        { id: 2, alias: 'Steady Oak', ago: '48m', text: 'There’s no “ready”, only “ready enough”. I started with video chats so it felt less big.', count: 11, mine: false },
+        { id: 3, alias: 'Kind Wren', ago: '5m', text: 'Three years is your time, not anyone else’s. Be gentle with yourself.', count: 4, mine: false }
+      ],
+      helpful: {},
+      reported: {}
+    };
+  }
+  detect(t) {
+    if (/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(t)) return 'email address';
+    if (/(\+?\d[\d\s().-]{6,}\d)/.test(t)) return 'phone number';
+    if (/(https?:\/\/|www\.|\.(com|co\.uk|net|org)\b)/i.test(t)) return 'link';
+    if (/(^|\s)@[a-z0-9_.]{2,}/i.test(t)) return 'social handle';
+    if (/\b(whats ?app|instagram|insta|facebook|snapchat|telegram|tiktok|signal|my number|call me|text me)\b/i.test(t)) return 'contact request';
+    return '';
+  }
+  renderVals() {
+    const s = this.state;
+    const tints = ['#E6D9EC', '#F3DECB', '#D3DDEE', '#DCE6E2'];
+    const kind = this.detect(s.draft);
+    const canSend = s.draft.trim().length > 0 && !kind;
+    const replies = s.replies.map((r, i) => {
+      const on = !!s.helpful[r.id];
+      return Object.assign({}, r, {
+        count: r.count + (on ? 1 : 0),
+        pressed: on ? 'true' : 'false',
+        toggleHelpful: () => this.setState({ helpful: Object.assign({}, s.helpful, { [r.id]: !on }) }),
+        reported: !!s.reported[r.id],
+        canReport: !r.mine && !s.reported[r.id],
+        report: () => this.setState({ reported: Object.assign({}, s.reported, { [r.id]: true }) }),
+        cardStyle: 'padding: 14px 16px 6px; border-radius: 18px; display: flex; flex-direction: column; gap: 6px; ' + (r.mine ? 'background: #EAF1EE; border: 1px solid #C8D9D3;' : 'background: #FFFFFF;'),
+        dot: 'flex: none; width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ' + (r.mine ? '#1E5A57' : tints[i % tints.length]),
+        helpStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 0; border-radius: 18px; background: transparent; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; color: ' + (on ? '#1E5A57' : '#5B6763')
+      });
+    });
+    return {
+      replies,
+      replyCount: s.replies.length + 21,
+      draft: s.draft,
+      threadReported: s.threadReported,
+      reportThread: () => this.setState({ threadReported: true }),
+      blockedContact: !!kind,
+      notBlockedContact: !kind,
+      contactKind: kind,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      sendDisabled: !canSend,
+      inputStyle: 'flex: 1; min-width: 0; height: 46px; border-radius: 23px; padding: 0 16px; font-family: inherit; font-size: 15px; color: #1B2421; background: #FFFFFF; ' + (kind ? 'border: 2px solid #B42323;' : 'border: 1px solid #C9D3CF;'),
+      sendStyle: 'flex: none; width: 46px; height: 46px; border-radius: 23px; border: 0; display: flex; align-items: center; justify-content: center; ' + (canSend ? 'background: #1E5A57; color: #FFFFFF; cursor: pointer;' : 'background: #E3E8E6; color: #8C9894; cursor: not-allowed;'),
+      send: () => {
+        if (!canSend) return;
+        const next = s.replies.concat([{ id: Date.now(), alias: 'Quiet Heron (you)', ago: 'now', text: s.draft.trim(), count: 0, mine: true }]);
+        this.setState({ replies: next, draft: '' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd web – Choose your plan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+@media (max-width: 1023px){.w-shell{grid-template-columns:minmax(0,1fr) !important}.w-side{position:static !important;height:auto !important;flex-direction:row !important;flex-wrap:wrap !important;align-items:center !important;padding:10px 16px !important;border-right:0 !important;border-bottom:1px solid #E3E8E6}.w-hide{display:none !important}.w-main{padding:20px 16px 32px !important}.w-pay{grid-template-columns:minmax(0,1fr) !important}}
+</style>
+</helmet>
+<div class="w-shell" style="min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+  <aside class="w-side" style="position: sticky; top: 0; height: 100vh; box-sizing: border-box; padding: 28px 16px 20px; background: #FFFFFF; border-right: 1px solid #E3E8E6; display: flex; flex-direction: column; gap: 4px">
+    <a href="WebDiscover.dc.html" style="padding: 2px 14px 18px; font-size: 26px; font-weight: 800; letter-spacing: -0.8px; color: #1E5A57; text-decoration: none">widowd</a>
+    <nav aria-label="Main" style="display: flex; flex-direction: inherit; flex-wrap: inherit; gap: 4px">
+      <a href="WebDiscover.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>Discover</a>
+      <a href="WebSearch.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Search</a>
+      <a href="WebChats.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Chats</a>
+      <a href="WebCommunity.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 9h2a2 2 0 012 2v5a2 2 0 01-2 2h-1v3l-3-3h-4a2 2 0 01-2-2v-1"></path><path d="M3 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-3 3v-3H5a2 2 0 01-2-2z"></path></svg>Community</a>
+      <a href="WebProfile.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>Me</a>
+    </nav>
+  </aside>
+
+  <main class="w-main" style="min-width: 0; padding: 36px 40px 56px">
+    <div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px">
+      <header style="display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center">
+        <span style="font-size: 13px; font-weight: 800; letter-spacing: 1.2px; color: #8A5A16">CHOOSE YOUR PLAN</span>
+        <h1 style="margin: 0; font-size: 38px; line-height: 1.1; font-weight: 800; letter-spacing: -1px">Start free. Upgrade when you’re ready.</h1>
+        <p style="margin: 0; max-width: 560px; font-size: 16px; line-height: 1.55; color: #3F4A46; text-wrap: balance">Registration, suggestions, likes, matches and the Community are always free. Widowd Plus adds messaging, video calls, Share my date and more privacy.</p>
+      </header>
+
+      <div role="radiogroup" aria-label="Plans" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+        <sc-for list="{{plans}}" as="pl" hint-placeholder-count="4">
+          <button type="button" role="radio" aria-checked="{{pl.checked}}" onClick="{{pl.pick}}" style="{{pl.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px">
+              <span style="font-size: 18px; font-weight: 800; color: #1B2421">{{pl.name}}</span>
+              <span style="{{pl.tagStyle}}">{{pl.tag}}</span>
+            </span>
+            <span style="display: flex; align-items: baseline; gap: 6px"><span style="font-size: 30px; font-weight: 800; letter-spacing: -0.6px; color: #1B2421">{{pl.price}}</span><span style="font-size: 13px; color: #5B6763">{{pl.per}}</span></span>
+            <span style="font-size: 13px; line-height: 1.4; color: #3F4A46; text-align: left">{{pl.sub}}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div class="w-pay" style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start">
+        <section aria-label="What you get" style="padding: 22px 24px; border-radius: 22px; background: #FFFFFF">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px; align-items: end; padding-bottom: 10px; border-bottom: 1px solid #E3E8E6">
+            <span style="font-size: 15px; font-weight: 800">What you get</span>
+            <span style="text-align: center; font-size: 13px; font-weight: 800; color: #5B6763">Free</span>
+            <span style="text-align: center; font-size: 13px; font-weight: 800; color: #1E5A57">Plus</span>
+          </div>
+          <sc-for list="{{features}}" as="f" hint-placeholder-count="8">
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px; align-items: center; min-height: 44px; border-bottom: 1px solid #EEF2F0">
+              <span style="font-size: 14px; font-weight: 600">{{f.label}}</span>
+              <span style="display: flex; justify-content: center">
+                <sc-if value="{{f.free}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Included in Free"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
+                <sc-if value="{{f.notFree}}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="Not in Free" style="color: #8C9894; font-weight: 700">—</span></sc-if>
+              </span>
+              <span style="display: flex; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Included in Plus"><path d="M5 12l5 5 9-10"></path></svg></span>
+            </div>
+          </sc-for>
+          <p style="margin: 12px 0 0; font-size: 12px; line-height: 1.5; color: #5B6763">Private view-once photos and live location sharing are used in the phone app, where screenshots are blocked.</p>
+        </section>
+
+        <section aria-label="Checkout" style="position: sticky; top: 24px; padding: 22px 24px; border-radius: 22px; background: #1B2421; color: #FFFFFF; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #F2C27B">YOUR CHOICE</span>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+            <span style="font-size: 22px; font-weight: 800">{{chosenName}}</span>
+            <span style="font-size: 18px; font-weight: 800">{{chosenPrice}}</span>
+          </div>
+          <a href="{{ctaHref}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 54px; border-radius: 27px; background: #F2C27B; color: #1B2421; font-size: 16px; font-weight: 800; text-decoration: none">
+            <sc-if value="{{paid}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></sc-if>{{cta}}</a>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #C9D6D2">{{legal}}</p>
+          <div style="padding: 12px 14px; border-radius: 14px; background: #2A3633; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 14px; font-weight: 800">Already subscribed on your phone?</span>
+            <span style="font-size: 13px; line-height: 1.45; color: #C9D6D2">Your plan works here too. Sign in with the same account and Plus unlocks automatically.</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; font-weight: 700">
+            <a href="WebPremium.dc.html" style="display: flex; align-items: center; min-height: 36px; color: #F2C27B">Manage subscription</a>
+            <a href="WebPremium.dc.html" style="display: flex; align-items: center; min-height: 36px; color: #F2C27B">Terms</a>
+            <a href="WebPremium.dc.html" style="display: flex; align-items: center; min-height: 36px; color: #F2C27B">Privacy</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { plan: 'month' };
+  }
+  renderVals() {
+    const p = this.state.plan;
+    const defs = [
+      { id: 'free', name: 'Free', price: '£0', per: 'forever', sub: 'Join, like, match and the Community', tag: '' },
+      { id: 'week', name: 'Weekly', price: '[PRICE]', per: 'per week', sub: 'Try Plus, cancel any time', tag: '' },
+      { id: 'month', name: 'Monthly', price: '[PRICE]', per: 'per month', sub: 'Billed every month', tag: 'Most popular' },
+      { id: 'six', name: '6 months', price: '[PRICE]', per: 'per month', sub: '[PRICE] billed every 6 months', tag: 'Best value' }
+    ];
+    const plans = defs.map((d) => {
+      const on = d.id === p;
+      return Object.assign({}, d, {
+        checked: on ? 'true' : 'false',
+        pick: () => this.setState({ plan: d.id }),
+        style: 'display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; border-radius: 20px; text-align: left; font-family: inherit; cursor: pointer; ' + (on ? 'background: #EAF1EE; border: 2px solid #1E5A57;' : 'background: #FFFFFF; border: 1px solid #C9D3CF;'),
+        tagStyle: d.tag ? 'padding: 3px 8px; border-radius: 9px; font-size: 11px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; ' + (d.id === 'six' ? 'background: #FBF0DF; color: #7A4B0E;' : 'background: #1E5A57; color: #FFFFFF;') : 'display: none'
+      });
+    });
+    const features = [
+      ['Registration', true],
+      ['Peer-support Community', true],
+      ['Suggestions, likes & matches', true],
+      ['Message & video chat', false],
+      ['Plan a date & Share my date', false],
+      ['Photo verified & ID badges', false],
+      ['Verified-only search', false],
+      ['Incognito browsing', false]
+    ].map(([label, free]) => ({ label, free, notFree: !free }));
+    const chosen = defs.find((d) => d.id === p);
+    const paid = p !== 'free';
+    return {
+      plans, features, paid,
+      chosenName: paid ? 'Widowd Plus · ' + chosen.name : 'Free',
+      chosenPrice: paid ? chosen.price + ' ' + chosen.per : '£0',
+      cta: paid ? 'Continue to secure payment' : 'Continue with Free',
+      ctaHref: paid ? 'WebPremium.dc.html' : 'WebDiscover.dc.html',
+      legal: paid
+        ? 'Pay by card on the web. Renews automatically until you cancel — cancel any time from Me → Subscription. Widowd never sees or stores your card number.'
+        : 'No payment needed. You can upgrade any time.'
+    };
+  }
+}
+</script>
+</body>
+</html>

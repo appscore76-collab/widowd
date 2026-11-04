@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – About you and children</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; padding: 60px 24px 32px; overflow: hidden">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <a href="Intent.dc.html" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; margin-left: -10px; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; height: 6px; border-radius: 3px; background: #E3E8E6; overflow: hidden">
+      <div style="width: 66%; height: 6px; background: #1E5A57"></div>
+    </div>
+    <span style="font-size: 13px; color: #5B6763; font-weight: 600">4 of 6</span>
+  </div>
+
+  <h1 style="margin: 24px 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2">Tell us about your family</h1>
+  <p style="margin: 0 0 22px; font-size: 15px; line-height: 1.5; color: #5B6763">Family matters here. The number of children you have is shown on your profile.</p>
+
+  <div style="padding: 16px; border-radius: 18px; background: #F4F7F6; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 800">Number of children</span>
+        <span style="font-size: 13px; color: #5B6763">Shown on profile as “{{kidsLabel}}”</span>
+      </span>
+      <div style="display: flex; align-items: center; gap: 4px">
+        <button type="button" aria-label="Fewer children" onClick="{{dec}}" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #C9D3CF; background: #FFFFFF; font-family: inherit; font-size: 22px; font-weight: 600; color: #1B2421; cursor: pointer">−</button>
+        <output aria-live="polite" style="width: 40px; text-align: center; font-size: 24px; font-weight: 800">{{kidsShort}}</output>
+        <button type="button" aria-label="More children" onClick="{{inc}}" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1E5A57; font-family: inherit; font-size: 22px; font-weight: 600; color: #FFFFFF; cursor: pointer">+</button>
+      </div>
+    </div>
+    <div style="height: 1px; background: #E3E8E6"></div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700">Their ages</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; background: #FFFFFF; font-size: 14px">Under 12</span>
+        <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; background: #FFFFFF; font-size: 14px">Teenagers</span>
+        <span style="padding: 8px 14px; border-radius: 18px; background: #1E5A57; color: #FFFFFF; font-size: 14px; font-weight: 600">Grown up</span>
+        <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; background: #FFFFFF; font-size: 14px">Mixed</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700">Living at home?</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; background: #FFFFFF; font-size: 14px">Yes</span>
+        <span style="padding: 8px 14px; border-radius: 18px; background: #1E5A57; color: #FFFFFF; font-size: 14px; font-weight: 600">No</span>
+        <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; background: #FFFFFF; font-size: 14px">Some of the time</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin: 22px 0 10px; font-size: 15px; font-weight: 700">Open to a partner with children?</h2>
+  <div style="display: flex; gap: 8px">
+    <span style="flex: 1; text-align: center; padding: 10px 0; border-radius: 14px; background: #EAF1EE; border: 2px solid #1E5A57; font-size: 14px; font-weight: 700; color: #1E5A57">Yes</span>
+    <span style="flex: 1; text-align: center; padding: 10px 0; border-radius: 14px; border: 1px solid #C9D3CF; font-size: 14px">Prefer not</span>
+    <span style="flex: 1; text-align: center; padding: 10px 0; border-radius: 14px; border: 1px solid #C9D3CF; font-size: 14px">Don’t mind</span>
+  </div>
+
+  <a href="Photos.dc.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">Continue</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { kids: 2 };
+  }
+  renderVals() {
+    const k = this.state.kids;
+    return {
+      kidsShort: k >= 5 ? '5+' : String(k),
+      kidsLabel: k === 0 ? 'No children' : (k >= 5 ? '5+ children' : k + (k === 1 ? ' child' : ' children')),
+      dec: () => this.setState({ kids: Math.max(0, k - 1) }),
+      inc: () => this.setState({ kids: Math.min(5, k + 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

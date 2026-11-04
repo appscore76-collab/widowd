@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Chats</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; padding: 58px 0 0">
+  <div style="display: flex; align-items: baseline; justify-content: space-between; margin: 0 20px">
+    <h1 style="margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.6px">Chats</h1>
+    <span style="font-size: 13px; font-weight: 600; color: #5B6763">{{countText}}</span>
+  </div>
+
+  <label for="chat-search" style="margin: 12px 20px 0; display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 22px; background: #F4F7F6; color: #5B6763">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+    <input id="chat-search" type="search" placeholder="Search your chats" aria-label="Search your chats" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 15px; color: #1B2421">
+  </label>
+
+  <div role="tablist" aria-label="Filter chats" style="display: flex; gap: 8px; padding: 12px 20px 6px">
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+      <button type="button" role="tab" aria-selected="{{tb.selected}}" onClick="{{tb.pick}}" style="{{tb.style}}">{{tb.label}}</button>
+    </sc-for>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+      <li>
+        <a href="{{r.href}}" aria-label="{{r.aria}}" style="display: flex; align-items: center; gap: 12px; padding: 10px 20px; min-height: 72px; box-sizing: border-box; text-decoration: none; color: #1B2421">
+          <span style="{{r.avatar}}">{{r.initial}}</span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="{{r.nameStyle}}">{{r.name}}</span>
+              <sc-if value="{{r.datePlanned}}" hint-placeholder-val="{{ false }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A4B0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Date planned"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+              </sc-if>
+              <span style="flex: 1"></span>
+              <span style="{{r.timeStyle}}">{{r.time}}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 8px">
+              <span style="{{r.previewStyle}}">{{r.preview}}</span>
+              <sc-if value="{{r.hasUnread}}" hint-placeholder-val="{{ false }}">
+                <span style="flex: none; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: #1E5A57; color: #FFFFFF; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{r.unread}}</span>
+              </sc-if>
+              <sc-if value="{{r.blocked}}" hint-placeholder-val="{{ false }}">
+                <span style="flex: none; padding: 2px 8px; border-radius: 9px; background: #FDE8E8; color: #9B1C1C; font-size: 11px; font-weight: 800">Blocked</span>
+              </sc-if>
+            </span>
+          </span>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+  <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+    <p style="margin: 24px 20px; font-size: 14px; color: #5B6763; text-align: center">{{emptyText}}</p>
+  </sc-if>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; box-sizing: border-box; padding-top: 8px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; justify-content: space-around; align-items: flex-start">
+    <a href="Discover.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>Discover</a>
+    <a href="Search.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Search</a>
+    <a href="Community.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 9h2a2 2 0 012 2v5a2 2 0 01-2 2h-1v3l-3-3h-4a2 2 0 01-2-2v-1"></path><path d="M3 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-3 3v-3H5a2 2 0 01-2-2z"></path></svg>Community</a>
+    <a href="Matches.dc.html" aria-current="page" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #1E5A57; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Chats</a>
+    <a href="Incognito.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>Me</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'all', q: '' };
+  }
+  renderVals() {
+    const s = this.state;
+    const tints = ['#C8D9D3', '#E6D9EC', '#F3DECB', '#D3DDEE', '#DCE6E2', '#F6E7C8', '#E9DCD3'];
+    const chats = [
+      { name: 'Margaret', time: '2m', preview: 'Saturday at 2 sounds lovely. See you there!', unread: 2, datePlanned: true },
+      { name: 'Susan', time: 'Yesterday', preview: 'Ha! I still can’t work the TV remote either.', unread: 0 },
+      { name: 'Patricia', time: 'Wed', preview: '3 photos · View once', unread: 1 },
+      { name: 'Carol', time: 'Tue', preview: 'You: How was the choir concert?', unread: 0 },
+      { name: 'Helen', time: 'Sun', preview: 'Video call · 18 min', unread: 0, datePlanned: true },
+      { name: 'Joan', time: '19 Oct', preview: 'You: Lovely to chat, Joan. Take care.', unread: 0 },
+      { name: 'Eileen', time: '12 Oct', preview: 'You blocked Eileen', unread: 0, blocked: true }
+    ];
+    const q = s.q.trim().toLowerCase();
+    const rows = chats
+      .map((c, i) => Object.assign({}, c, { tint: tints[i % tints.length] }))
+      .filter((c) => {
+        if (s.tab === 'blocked') return !!c.blocked;
+        if (c.blocked) return false;
+        if (s.tab === 'unread') return c.unread > 0;
+        if (s.tab === 'dates') return !!c.datePlanned;
+        return true;
+      })
+      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.preview.toLowerCase().includes(q))
+      .map((c) => {
+        const bold = c.unread > 0;
+        return Object.assign({}, c, {
+          initial: c.name[0],
+          href: c.blocked ? 'ChatBlocked.dc.html' : 'Chat.dc.html',
+          aria: 'Open chat with ' + c.name + (c.unread ? ', ' + c.unread + ' unread' : '') + (c.blocked ? ', blocked' : ''),
+          hasUnread: bold,
+          datePlanned: !!c.datePlanned,
+          blocked: !!c.blocked,
+          avatar: 'flex: none; width: 52px; height: 52px; border-radius: 26px; background: ' + c.tint + '; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: #1B2421; ' + (c.blocked ? 'opacity: 0.5;' : ''),
+          nameStyle: 'font-size: 16px; font-weight: ' + (bold ? '800' : '700') + '; color: ' + (c.blocked ? '#5B6763' : '#1B2421'),
+          timeStyle: 'font-size: 12px; font-weight: ' + (bold ? '800' : '500') + '; color: ' + (bold ? '#1E5A57' : '#5B6763'),
+          previewStyle: 'flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ' + (bold ? 'font-weight: 700; color: #1B2421;' : 'color: #5B6763;')
+        });
+      });
+    const tabDefs = [['all', 'All'], ['unread', 'Unread'], ['dates', 'Dates'], ['blocked', 'Blocked']];
+    const tabs = tabDefs.map(([id, label]) => ({
+      label, selected: s.tab === id ? 'true' : 'false',
+      pick: () => this.setState({ tab: id }),
+      style: 'height: 36px; padding: 0 14px; border-radius: 18px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (s.tab === id ? 'background: #1B2421; color: #FFFFFF; border: 1px solid #1B2421;' : 'background: #FFFFFF; color: #1B2421; border: 1px solid #C9D3CF;')
+    }));
+    const active = chats.filter((c) => !c.blocked).length;
+    return {
+      rows, tabs,
+      countText: active + ' conversations',
+      empty: rows.length === 0,
+      emptyText: s.tab === 'blocked' ? 'You haven’t blocked anyone.' : 'No chats match your search.',
+      onSearch: (e) => this.setState({ q: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

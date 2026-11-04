@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Dating intent</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; padding: 60px 24px 32px; overflow: hidden">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <a href="Main.dc.html" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; margin-left: -10px; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; height: 6px; border-radius: 3px; background: #E3E8E6; overflow: hidden">
+      <div style="width: 50%; height: 6px; background: #1E5A57"></div>
+    </div>
+    <span style="font-size: 13px; color: #5B6763; font-weight: 600">3 of 6</span>
+  </div>
+
+  <h1 style="margin: 16px 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2">What are you hoping to find?</h1>
+  <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.5; color: #5B6763">Your intent shows on your profile and shapes who we suggest. You can change it any time.</p>
+
+  <div role="radiogroup" aria-label="Dating intent" style="display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{intents}}" as="item" hint-placeholder-count="5">
+      <button type="button" role="radio" aria-checked="{{item.checked}}" onClick="{{item.pick}}" style="{{item.style}}">
+        <span style="display: flex; flex-direction: column; gap: 2px; text-align: left">
+          <span style="font-size: 16px; font-weight: 700; color: #1B2421">{{item.label}}</span>
+          <span style="font-size: 13px; color: #5B6763">{{item.hint}}</span>
+        </span>
+        <span style="{{item.dot}}"></span>
+      </button>
+    </sc-for>
+  </div>
+
+  <h2 style="margin: 24px 0 10px; font-size: 15px; font-weight: 700">Where are you in your journey? <span style="font-weight: 500; color: #5B6763">(optional)</span></h2>
+  <div style="display: flex; flex-wrap: wrap; gap: 8px">
+    <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; font-size: 14px">Under 2 years</span>
+    <span style="padding: 8px 14px; border-radius: 18px; background: #1E5A57; color: #FFFFFF; font-size: 14px; font-weight: 600">2–5 years</span>
+    <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; font-size: 14px">5+ years</span>
+    <span style="padding: 8px 14px; border-radius: 18px; border: 1px solid #C9D3CF; font-size: 14px">Prefer not to say</span>
+  </div>
+
+  <a href="About.dc.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">Continue</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picked: 'long' };
+  }
+  renderVals() {
+    const opts = [
+      { id: 'friend', label: 'Companionship', hint: 'Friendship first, see where it goes' },
+      { id: 'casual', label: 'Dating casually', hint: 'Meeting new people, no pressure' },
+      { id: 'long', label: 'A long-term partner', hint: 'Someone to share life with' },
+      { id: 'marriage', label: 'Marriage', hint: 'Ready to commit again' },
+      { id: 'unsure', label: 'Not sure yet', hint: 'Taking it one step at a time' }
+    ];
+    const intents = opts.map((o) => {
+      const on = o.id === this.state.picked;
+      return Object.assign({}, o, {
+        checked: on ? 'true' : 'false',
+        pick: () => this.setState({ picked: o.id }),
+        style: 'display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 64px; padding: 12px 16px; border-radius: 16px; font-family: inherit; cursor: pointer; ' + (on ? 'background: #EAF1EE; border: 2px solid #1E5A57;' : 'background: #FFFFFF; border: 1px solid #C9D3CF;'),
+        dot: 'flex: none; width: 22px; height: 22px; border-radius: 11px; box-sizing: border-box; ' + (on ? 'border: 7px solid #1E5A57; background: #FFFFFF;' : 'border: 2px solid #8C9894;')
+      });
+    });
+    return { intents };
+  }
+}
+</script>
+</body>
+</html>

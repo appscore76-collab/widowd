@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Start a discussion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <header style="padding: 52px 16px 6px; display: flex; align-items: center; gap: 8px">
+    <a href="Community.dc.html" aria-label="Cancel" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <h1 style="flex: 1; margin: 0; font-size: 20px; font-weight: 800">Start a discussion</h1>
+  </header>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="padding: 12px 14px; border-radius: 16px; background: #1B2421; color: #FFFFFF; display: flex; align-items: center; gap: 12px">
+      <span style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #33433F; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2C27B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg></span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 1px">
+        <span style="font-size: 12px; color: #C9D6D2">Posting under a random nickname</span>
+        <span aria-live="polite" style="font-size: 16px; font-weight: 800">{{alias}}</span>
+      </span>
+      <button type="button" onClick="{{shuffle}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #4F5F5A; background: transparent; color: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">New nickname</button>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 800">Topic</h2>
+      <div role="radiogroup" aria-label="Topic" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{topics}}" as="t" hint-placeholder-count="4">
+          <button type="button" role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </div>
+    </section>
+
+    <label for="post-title" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">Title
+      <input id="post-title" type="text" placeholder="e.g. How do you handle anniversaries?" onInput="{{onTitle}}" style="{{titleStyle}}">
+    </label>
+    <label for="post-body" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">What would you like to talk about?
+      <textarea id="post-body" rows="4" placeholder="Share as much or as little as you like." onInput="{{onBody}}" style="{{bodyStyle}}"></textarea>
+    </label>
+
+    <sc-if value="{{blockedContact}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 12px; background: #FDE8E8; color: #9B1C1C; font-size: 13px; line-height: 1.4; font-weight: 700">Contact details can’t be shared in Community. Remove the {{contactKind}} to post.</p>
+    </sc-if>
+
+    <ul style="list-style: none; margin: 0; padding: 12px 14px; border-radius: 16px; background: #F4F7F6; display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 1.4; color: #3F4A46">
+      <li style="display: flex; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M5 12l5 5 9-10"></path></svg>Your dating profile, name and photos are never linked</li>
+      <li style="display: flex; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42323" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M6 6l12 12M18 6L6 18"></path></svg>For support only — no dating, flirting or match requests</li>
+      <li style="display: flex; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M5 12l5 5 9-10"></path></svg>Other members reply in your discussion</li>
+      <li style="display: flex; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42323" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M6 6l12 12M18 6L6 18"></path></svg>No phone numbers, emails, links or social handles</li>
+      <li style="display: flex; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42323" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M6 6l12 12M18 6L6 18"></path></svg>No private messages from Community</li>
+    </ul>
+  </div>
+
+  <div style="padding: 12px 20px 30px; border-top: 1px solid #E3E8E6">
+    <sc-if value="{{canPost}}" hint-placeholder-val="{{ false }}">
+      <a href="Thread.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">Post discussion</a>
+    </sc-if>
+    <sc-if value="{{cannotPost}}" hint-placeholder-val="{{ true }}">
+      <button type="button" disabled style="width: 100%; height: 56px; border-radius: 28px; border: 0; background: #E3E8E6; color: #5B6763; font-family: inherit; font-size: 17px; font-weight: 700">{{disabledLabel}}</button>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { aliasIdx: 0, topic: 'dating', title: '', body: '' };
+  }
+  detect(t) {
+    if (/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(t)) return 'email address';
+    if (/(\+?\d[\d\s().-]{6,}\d)/.test(t)) return 'phone number';
+    if (/(https?:\/\/|www\.|\.(com|co\.uk|net|org)\b)/i.test(t)) return 'link';
+    if (/(^|\s)@[a-z0-9_.]{2,}/i.test(t)) return 'social handle';
+    if (/\b(whats ?app|instagram|insta|facebook|snapchat|telegram|tiktok|signal|my number|call me|text me)\b/i.test(t)) return 'contact request';
+    return '';
+  }
+  renderVals() {
+    const s = this.state;
+    const aliases = ['Quiet Heron', 'Calm Willow', 'Bright Finch', 'Still Harbour', 'Warm Ember'];
+    const topicDefs = [['grief', 'Grief & healing'], ['dating', 'Dating again'], ['family', 'Family'], ['life', 'Everyday life']];
+    const topics = topicDefs.map(([id, label]) => ({
+      label, checked: s.topic === id ? 'true' : 'false',
+      pick: () => this.setState({ topic: id }),
+      style: 'height: 40px; padding: 0 14px; border-radius: 20px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (s.topic === id ? 'background: #1E5A57; color: #FFFFFF; border: 1px solid #1E5A57;' : 'background: #FFFFFF; color: #1B2421; border: 1px solid #C9D3CF;')
+    }));
+    const kind = this.detect(s.title + ' ' + s.body);
+    const ok = s.title.trim().length > 0 && !kind;
+    const field = (bad) => 'border-radius: 14px; padding: 12px 14px; font-family: inherit; font-size: 15px; font-weight: 500; color: #1B2421; background: #FFFFFF; ' + (bad ? 'border: 2px solid #B42323;' : 'border: 1px solid #C9D3CF;');
+    return {
+      alias: aliases[s.aliasIdx % aliases.length],
+      shuffle: () => this.setState({ aliasIdx: s.aliasIdx + 1 }),
+      topics,
+      onTitle: (e) => this.setState({ title: e.target.value }),
+      onBody: (e) => this.setState({ body: e.target.value }),
+      titleStyle: 'height: 48px; box-sizing: border-box; ' + field(!!this.detect(s.title)),
+      bodyStyle: 'resize: none; line-height: 1.45; ' + field(!!this.detect(s.body)),
+      blockedContact: !!kind,
+      contactKind: kind,
+      canPost: ok,
+      cannotPost: !ok,
+      disabledLabel: kind ? 'Remove contact details to post' : 'Add a title to post'
+    };
+  }
+}
+</script>
+</body>
+</html>

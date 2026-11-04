@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Share my date</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; padding: 52px 20px 0; display: flex; flex-direction: column; gap: 14px">
+  <div style="display: flex; align-items: center; gap: 8px">
+    <a href="Chat.dc.html" aria-label="Back" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.4px">Share my date</h1>
+    <span style="padding: 3px 9px; border-radius: 10px; background: #1B2421; color: #F2C27B; font-size: 10px; font-weight: 800; letter-spacing: 0.6px">WIDOWD PLUS</span>
+  </div>
+
+  <div style="height: 128px; border-radius: 18px; background: #DCE6E2; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center">
+    <svg width="390" height="128" viewBox="0 0 390 128" aria-hidden="true" style="position: absolute; inset: 0"><path d="M0 40 L390 70 M0 100 L390 30 M120 0 L160 128 M260 0 L240 128" stroke="#FFFFFF" stroke-width="10" fill="none"></path></svg>
+    <svg width="36" height="36" viewBox="0 0 24 24" role="img" aria-label="The Orchard Café on map" style="position: relative"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" fill="#1E5A57"></path><circle cx="12" cy="10" r="2.5" fill="#FFFFFF"></circle></svg>
+    <span style="position: absolute; left: 12px; bottom: 10px; font-size: 11px; font-weight: 600; color: #3F5A52">[Map]</span>
+  </div>
+
+  <div style="padding: 14px 16px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 12px; font-weight: 700; color: #5B6763; text-transform: uppercase; letter-spacing: 0.5px">Date details</span>
+    <span style="font-size: 16px; font-weight: 800">Coffee with Margaret (verified)</span>
+    <span style="font-size: 14px; color: #1B2421">Sat 31 Oct · 2:00 – 4:00 pm</span>
+    <span style="font-size: 14px; color: #5B6763">The Orchard Café, 14 Bridge St, Chester</span>
+  </div>
+
+  <div style="padding: 14px 16px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 12px; font-weight: 700; color: #5B6763; text-transform: uppercase; letter-spacing: 0.5px">Trusted contacts</span>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 36px; height: 36px; border-radius: 18px; background: #E6D9EC; display: flex; align-items: center; justify-content: center; font-weight: 800">S</span>
+      <span style="flex: 1; font-size: 15px; font-weight: 600">Sarah <span style="font-weight: 500; color: #5B6763">· Daughter</span></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Selected"><path d="M5 12l5 5 9-10"></path></svg>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 36px; height: 36px; border-radius: 18px; background: #F3DECB; display: flex; align-items: center; justify-content: center; font-weight: 800">J</span>
+      <span style="flex: 1; font-size: 15px; font-weight: 600">James <span style="font-weight: 500; color: #5B6763">· Friend</span></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Selected"><path d="M5 12l5 5 9-10"></path></svg>
+    </div>
+    <button type="button" style="align-self: flex-start; height: 36px; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #1E5A57; cursor: pointer">+ Add a contact</button>
+  </div>
+
+  <div style="padding: 4px 16px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column">
+    <sc-for list="{{toggles}}" as="t" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 56px">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 1px">
+          <span style="font-size: 15px; font-weight: 700">{{t.label}}</span>
+          <span style="font-size: 12px; color: #5B6763">{{t.hint}}</span>
+        </span>
+        <button type="button" role="switch" aria-checked="{{t.checked}}" aria-label="{{t.label}}" onClick="{{t.flip}}" style="{{t.track}}"><span style="{{t.knob}}"></span></button>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top: auto; padding-bottom: 34px; display: flex; flex-direction: column; gap: 8px">
+    <button type="button" style="height: 56px; border-radius: 28px; border: 0; background: #1E5A57; color: #FFFFFF; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer">Share with 2 contacts</button>
+    <button type="button" style="height: 44px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #B42323; cursor: pointer">Need help now? Call emergency services</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { live: true, checkin: true, alert: true };
+  }
+  renderVals() {
+    const defs = [
+      { id: 'live', label: 'Share live location', hint: 'During the date only, then stops' },
+      { id: 'checkin', label: 'Check-in at 3:30 pm', hint: 'We’ll ask if you’re OK' },
+      { id: 'alert', label: 'Alert my contacts', hint: 'If I don’t respond to the check-in' }
+    ];
+    const toggles = defs.map((d) => {
+      const on = !!this.state[d.id];
+      return Object.assign({}, d, {
+        checked: on ? 'true' : 'false',
+        flip: () => this.setState({ [d.id]: !on }),
+        track: 'flex: none; width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; cursor: pointer; display: flex; ' + (on ? 'background: #1E5A57; justify-content: flex-end;' : 'background: #8C9894; justify-content: flex-start;'),
+        knob: 'width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.25)'
+      });
+    });
+    return { toggles };
+  }
+}
+</script>
+</body>
+</html>

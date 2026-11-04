@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd web – Chats</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+@media (max-width: 1023px){.w-shell{grid-template-columns:minmax(0,1fr) !important}.w-side{position:static !important;height:auto !important;flex-direction:row !important;flex-wrap:wrap !important;align-items:center !important;padding:10px 16px !important;border-right:0 !important;border-bottom:1px solid #E3E8E6}.w-hide{display:none !important}.w-chatsplit{grid-template-columns:minmax(0,1fr) !important;height:auto !important}.w-chatlist{display:none !important}}
+</style>
+</helmet>
+<div class="w-shell" style="min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+  <aside class="w-side" style="position: sticky; top: 0; height: 100vh; box-sizing: border-box; padding: 28px 16px 20px; background: #FFFFFF; border-right: 1px solid #E3E8E6; display: flex; flex-direction: column; gap: 4px">
+    <a href="WebDiscover.dc.html" style="padding: 2px 14px 18px; font-size: 26px; font-weight: 800; letter-spacing: -0.8px; color: #1E5A57; text-decoration: none">widowd</a>
+    <nav aria-label="Main" style="display: flex; flex-direction: inherit; flex-wrap: inherit; gap: 4px">
+      <a href="WebDiscover.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>Discover</a>
+      <a href="WebSearch.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Search</a>
+      <a href="WebChats.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; background: #EAF1EE; color: #1E5A57; font-size: 15px; font-weight: 800; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Chats<span aria-label="3 unread" style="margin-left: auto; min-width: 22px; height: 22px; padding: 0 7px; box-sizing: border-box; border-radius: 11px; background: #1E5A57; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center">3</span></a>
+      <a href="WebCommunity.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 9h2a2 2 0 012 2v5a2 2 0 01-2 2h-1v3l-3-3h-4a2 2 0 01-2-2v-1"></path><path d="M3 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-3 3v-3H5a2 2 0 01-2-2z"></path></svg>Community</a>
+      <a href="WebProfile.dc.html" style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 14px; color: #3F4A46; font-size: 15px; font-weight: 600; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>Me</a>
+    </nav>
+    <div class="w-hide" style="margin-top: auto; padding: 14px 16px; border-radius: 18px; background: #F4F7F6; display: flex; align-items: center; gap: 10px">
+      <span style="flex: none; width: 10px; height: 10px; border-radius: 5px; background: #1E5A57"></span>
+      <span style="font-size: 13px; line-height: 1.4; color: #3F4A46"><strong style="color: #1B2421">Widowd Plus</strong> · Monthly</span>
+    </div>
+  </aside>
+
+  <main class="w-chatsplit" style="min-width: 0; height: 100vh; display: grid; grid-template-columns: 360px minmax(0, 1fr)">
+    <section class="w-chatlist" aria-label="Conversations" style="min-height: 0; display: flex; flex-direction: column; background: #FFFFFF; border-right: 1px solid #E3E8E6">
+      <div style="padding: 28px 20px 12px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.6px">Chats</h1>
+          <span style="font-size: 13px; font-weight: 600; color: #5B6763">6 conversations</span>
+        </div>
+        <label for="web-chat-q" style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border-radius: 21px; background: #F4F7F6; color: #5B6763">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input id="web-chat-q" type="search" placeholder="Search your chats" aria-label="Search your chats" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 14px; color: #1B2421">
+        </label>
+        <div role="tablist" aria-label="Filter chats" style="display: flex; gap: 6px">
+          <button type="button" role="tab" aria-selected="true" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #1B2421; background: #1B2421; color: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">All</button>
+          <button type="button" role="tab" aria-selected="false" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">Unread</button>
+          <button type="button" role="tab" aria-selected="false" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">Dates</button>
+          <button type="button" role="tab" aria-selected="false" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">Blocked</button>
+        </div>
+      </div>
+      <ul style="list-style: none; margin: 0; padding: 0 8px 16px; overflow-y: auto; flex: 1">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <li>
+            <button type="button" aria-current="{{r.current}}" aria-label="{{r.aria}}" onClick="{{r.open}}" style="{{r.rowStyle}}">
+              <span style="{{r.avatar}}">{{r.initial}}</span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-align: left">
+                <span style="display: flex; align-items: center; gap: 6px">
+                  <span style="{{r.nameStyle}}">{{r.name}}</span>
+                  <span style="flex: 1"></span>
+                  <span style="{{r.timeStyle}}">{{r.time}}</span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 8px">
+                  <span style="{{r.previewStyle}}">{{r.preview}}</span>
+                  <sc-if value="{{r.hasUnread}}" hint-placeholder-val="{{ false }}">
+                    <span style="flex: none; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: #1E5A57; color: #FFFFFF; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{r.unread}}</span>
+                  </sc-if>
+                </span>
+              </span>
+            </button>
+          </li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <section aria-label="{{convLabel}}" style="min-height: 0; display: flex; flex-direction: column; background: #F4F7F6">
+      <header style="flex: none; display: flex; align-items: center; gap: 14px; padding: 18px 28px; background: #FFFFFF; border-bottom: 1px solid #E3E8E6">
+        <span style="{{headAvatar}}">{{initial}}</span>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+          <a href="WebProfile.dc.html" style="font-size: 18px; font-weight: 800; color: #1B2421; text-decoration: none">{{name}}</a>
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #1E40AF"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 2.5 4-.5.5 4L22 11l-2.5 3 .5 4-4 .5L12 21l-3-2.5-4 .5-.5-4L2 12l2.5-3-.5-4 4-.5z" fill="#2563EB"></path></svg>Photo verified · Active today</span>
+        </div>
+        <a href="WebChats.dc.html" style="display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 21px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; font-size: 14px; font-weight: 700; text-decoration: none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Plan a date</a>
+        <a href="WebChats.dc.html" style="display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 21px; background: #1E5A57; color: #FFFFFF; font-size: 14px; font-weight: 700; text-decoration: none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="M16 10l6-3v10l-6-3z"></path></svg>Video call</a>
+        <div style="position: relative">
+          <button type="button" aria-label="More options" aria-expanded="{{menuExpanded}}" onClick="{{toggleMenu}}" style="width: 42px; height: 42px; border-radius: 21px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; cursor: pointer; display: flex; align-items: center; justify-content: center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+          </button>
+          <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+            <div role="menu" style="position: absolute; right: 0; top: 50px; z-index: 2; width: 220px; padding: 6px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 12px 32px rgba(27,36,33,0.18); display: flex; flex-direction: column">
+              <a role="menuitem" href="WebProfile.dc.html" style="height: 42px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #1B2421; text-decoration: none">View profile</a>
+              <button type="button" role="menuitem" style="height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; display: flex; align-items: center; font-family: inherit; font-size: 14px; font-weight: 600; color: #1B2421; cursor: pointer">Report a concern</button>
+              <button type="button" role="menuitem" style="height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; display: flex; align-items: center; font-family: inherit; font-size: 14px; font-weight: 700; color: #B42323; cursor: pointer">Block Margaret</button>
+            </div>
+          </sc-if>
+        </div>
+      </header>
+
+      <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 10px">
+        <p style="align-self: center; margin: 0 0 6px; padding: 8px 14px; border-radius: 12px; background: #FBF0DF; color: #5A3608; font-size: 12px; font-weight: 700; text-align: center">Widowd will never ask for money. Never send money to someone you’ve met here.</p>
+        <sc-for list="{{msgs}}" as="m" hint-placeholder-count="5">
+          <div style="{{m.wrap}}">
+            <div style="{{m.bubble}}">{{m.text}}</div>
+            <span style="font-size: 11px; color: #5B6763">{{m.time}}</span>
+          </div>
+        </sc-for>
+        <div style="align-self: flex-start; width: min(380px, 100%); padding: 16px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E6; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #7A4B0E">DATE INVITE · ACCEPTED</span>
+          <span style="font-size: 17px; font-weight: 800">Afternoon tea</span>
+          <span style="font-size: 14px; color: #3F4A46">Saturday 8 November · 2:00pm<br>The Garden Tea Room, Chester</span>
+          <span style="font-size: 12px; color: #5B6763">Share my date is set up in the app, so your trusted contacts get the details.</span>
+        </div>
+      </div>
+
+      <form style="flex: none; padding: 14px 28px 20px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: flex-end; gap: 10px">
+          <button type="button" disabled aria-label="Private photos can only be sent from the phone app" style="flex: none; width: 46px; height: 46px; border-radius: 23px; border: 1px dashed #C9D3CF; background: #FFFFFF; color: #8C9894; display: flex; align-items: center; justify-content: center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+          </button>
+          <label for="web-msg" style="flex: 1; display: flex">
+            <textarea id="web-msg" rows="1" placeholder="Write a message to Margaret" aria-label="Message" style="flex: 1; min-height: 46px; box-sizing: border-box; padding: 12px 16px; border-radius: 23px; border: 1px solid #C9D3CF; resize: none; font-family: inherit; font-size: 15px; line-height: 1.4; color: #1B2421"></textarea>
+          </label>
+          <button type="button" aria-label="Send message" style="flex: none; height: 46px; padding: 0 22px; border-radius: 23px; border: 0; background: #1E5A57; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer">Send</button>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #5B6763">Private view-once photos can only be sent from the Widowd app on your phone, where screenshots are blocked.</p>
+      </form>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { active: 0, menu: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const tints = ['#C8D9D3', '#E6D9EC', '#F3DECB', '#D3DDEE', '#DCE6E2', '#F6E7C8'];
+    const chats = [
+      { name: 'Margaret', time: '2m', preview: 'Saturday at 2 sounds lovely. See you there!', unread: 2 },
+      { name: 'Susan', time: 'Yesterday', preview: 'Ha! I still can’t work the TV remote either.', unread: 0 },
+      { name: 'Patricia', time: 'Wed', preview: '3 photos · View once (open in the app)', unread: 1 },
+      { name: 'Carol', time: 'Tue', preview: 'You: How was the choir concert?', unread: 0 },
+      { name: 'Helen', time: 'Sun', preview: 'Video call · 18 min', unread: 0 },
+      { name: 'Joan', time: '19 Oct', preview: 'You: Lovely to chat, Joan. Take care.', unread: 0 }
+    ];
+    const rows = chats.map((c, i) => {
+      const on = s.active === i;
+      const bold = c.unread > 0 && !on;
+      return Object.assign({}, c, {
+        initial: c.name[0],
+        current: on ? 'true' : 'false',
+        aria: 'Open chat with ' + c.name + (c.unread ? ', ' + c.unread + ' unread' : ''),
+        open: () => this.setState({ active: i, menu: false }),
+        hasUnread: bold,
+        rowStyle: 'width: 100%; display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 10px 12px; box-sizing: border-box; border: 0; border-radius: 16px; font-family: inherit; color: #1B2421; cursor: pointer; ' + (on ? 'background: #EAF1EE;' : 'background: transparent;'),
+        avatar: 'flex: none; width: 48px; height: 48px; border-radius: 24px; background: ' + tints[i] + '; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #1B2421',
+        nameStyle: 'font-size: 15px; font-weight: ' + (bold || on ? '800' : '700'),
+        timeStyle: 'font-size: 12px; font-weight: ' + (bold ? '800' : '500') + '; color: ' + (bold ? '#1E5A57' : '#5B6763'),
+        previewStyle: 'flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ' + (bold ? 'font-weight: 700; color: #1B2421;' : 'color: #5B6763;')
+      });
+    });
+    const c = chats[s.active];
+    const threads = {
+      0: [
+        ['them', 'Good morning! I hope the rain held off for your walk.', '9:12am'],
+        ['me', 'It did — just about! Would you like to meet for afternoon tea on Saturday?', '9:30am'],
+        ['them', 'I’d really like that. Somewhere quiet would be nice.', '9:41am'],
+        ['me', 'The Garden Tea Room in Chester? 2 o’clock?', '9:44am'],
+        ['them', 'Saturday at 2 sounds lovely. See you there!', '9:46am']
+      ]
+    };
+    const list = threads[s.active] || [
+      ['them', c.preview.replace('You: ', ''), c.time],
+      ['me', 'Lovely to hear from you. How has your week been?', c.time]
+    ];
+    const msgs = list.map(([who, text, time]) => ({
+      text, time,
+      wrap: 'display: flex; flex-direction: column; gap: 4px; max-width: 70%; ' + (who === 'me' ? 'align-self: flex-end; align-items: flex-end;' : 'align-self: flex-start; align-items: flex-start;'),
+      bubble: 'padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.45; ' + (who === 'me' ? 'background: #1E5A57; color: #FFFFFF; border-bottom-right-radius: 6px;' : 'background: #FFFFFF; color: #1B2421; border-bottom-left-radius: 6px;')
+    }));
+    return {
+      rows, msgs,
+      name: c.name,
+      initial: c.name[0],
+      convLabel: 'Conversation with ' + c.name,
+      headAvatar: 'flex: none; width: 48px; height: 48px; border-radius: 24px; background: ' + tints[s.active] + '; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #1B2421',
+      menuOpen: s.menu,
+      menuExpanded: s.menu ? 'true' : 'false',
+      toggleMenu: () => this.setState({ menu: !s.menu })
+    };
+  }
+}
+</script>
+</body>
+</html>
