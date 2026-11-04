@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Date invite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #1E5A57; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; padding: 52px 20px 34px; display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Chat.dc.html" aria-label="Close" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <span style="font-size: 13px; font-weight: 700; color: #D6E6E2">Margaret’s view</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: #FFFFFF">
+    <div style="display: flex">
+      <span style="width: 64px; height: 64px; border-radius: 32px; background: #D3DDEE; border: 3px solid #1E5A57; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #1B2421">R</span>
+      <span style="width: 64px; height: 64px; border-radius: 32px; margin-left: -14px; background: #C8D9D3; border: 3px solid #1E5A57; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #1B2421">M</span>
+    </div>
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2">Robert has invited you on a date</h1>
+  </div>
+
+  <div style="background: #FFFFFF; border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 52px; height: 56px; border-radius: 14px; background: #FBF0DF; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #7A4B0E; flex: none">
+        <span style="font-size: 11px; font-weight: 800">OCT</span><span style="font-size: 22px; font-weight: 800; line-height: 1">31</span>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 18px; font-weight: 800">Coffee</span>
+        <span style="font-size: 14px; color: #3F4A46">Saturday · 2:00 pm</span>
+      </span>
+    </div>
+    <div style="height: 1px; background: #E3E8E6"></div>
+    <div style="display: flex; align-items: flex-start; gap: 10px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+      <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">The Orchard Café</span><span style="font-size: 13px; color: #5B6763">14 Bridge St, Chester · 2.9 mi from you</span></span>
+    </div>
+    <div style="padding: 10px 12px; border-radius: 12px; background: #F4F7F6; font-size: 14px; line-height: 1.4">“I’ll be the one with the red scarf.”</div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap">
+      <span style="padding: 3px 8px; border-radius: 9px; background: #E5EDFD; color: #1E40AF; font-size: 11px; font-weight: 700">Robert is photo verified</span>
+      <span style="padding: 3px 8px; border-radius: 9px; background: #EAF1EE; color: #1E5A57; font-size: 11px; font-weight: 700">ID checked</span>
+    </div>
+  </div>
+
+  <sc-if value="{{pending}}" hint-placeholder-val="{{ true }}">
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+      <button type="button" onClick="{{accept}}" style="height: 56px; border-radius: 28px; border: 0; background: #FFFFFF; color: #1E5A57; font-family: inherit; font-size: 17px; font-weight: 800; cursor: pointer">Accept</button>
+      <button type="button" onClick="{{suggest}}" style="height: 52px; border-radius: 26px; border: 2px solid #FFFFFF; background: transparent; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Suggest another time</button>
+      <button type="button" onClick="{{decline}}" style="height: 44px; border: 0; background: transparent; color: #D6E6E2; font-family: inherit; font-size: 15px; font-weight: 600; text-decoration: underline; cursor: pointer">Not this time</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top: auto; padding: 16px; border-radius: 20px; background: rgba(255,255,255,0.12); color: #FFFFFF; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 17px; font-weight: 800">{{doneTitle}}</span>
+      <span style="font-size: 14px; line-height: 1.45; color: #E4EEEB">{{doneText}}</span>
+      <a href="ShareDate.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: #FFFFFF; color: #1E5A57; font-size: 16px; font-weight: 800; text-decoration: none">Share my date &amp; location</a>
+      <button type="button" onClick="{{reset}}" style="height: 36px; border: 0; background: transparent; color: #D6E6E2; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Undo</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { answer: null };
+  }
+  renderVals() {
+    const a = this.state.answer;
+    const copy = {
+      accept: ['You’re going! Added to your calendar.', 'We’ll remind you both the day before. Let someone you trust know where you’ll be.'],
+      suggest: ['New time sent to Robert', 'He can accept your suggestion or pick another. Your original details stay private.'],
+      decline: ['Invite declined kindly', 'Robert sees “Margaret can’t make it this time.” You can still chat.']
+    };
+    return {
+      pending: !a,
+      done: !!a,
+      doneTitle: a ? copy[a][0] : '',
+      doneText: a ? copy[a][1] : '',
+      accept: () => this.setState({ answer: 'accept' }),
+      suggest: () => this.setState({ answer: 'suggest' }),
+      decline: () => this.setState({ answer: 'decline' }),
+      reset: () => this.setState({ answer: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

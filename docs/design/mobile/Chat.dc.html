@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <header style="padding: 52px 6px 10px; background: #FFFFFF; border-bottom: 1px solid #E3E8E6; display: flex; align-items: center; gap: 2px">
+    <a href="Matches.dc.html" aria-label="Back to chats" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <a href="Profile.dc.html" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1B2421">
+      <span style="{{avatarStyle}}">M</span>
+      <span style="display: flex; flex-direction: column">
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 800">Margaret
+          <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="Photo verified"><path d="M12 2l3 2.5 4-.5.5 4L22 11l-2.5 3 .5 4-4 .5L12 21l-3-2.5-4 .5-.5-4L2 12l2.5-3-.5-4 4-.5z" fill="#2563EB"></path><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </span>
+        <span style="{{statusStyle}}">{{statusText}}</span>
+      </span>
+    </a>
+    <sc-if value="{{notBlocked}}" hint-placeholder-val="{{ true }}">
+      <a href="Video.dc.html" aria-label="Start video call" style="width: 44px; height: 44px; border-radius: 22px; background: #EAF1EE; display: flex; align-items: center; justify-content: center; color: #1E5A57">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="M16 10l6-3v10l-6-3z"></path></svg>
+      </a>
+      <a href="ShareDate.dc.html" aria-label="Safety tools" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg>
+      </a>
+    </sc-if>
+    <button type="button" aria-label="More options for this chat" aria-haspopup="dialog" onClick="{{openMenu}}" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; color: #1B2421; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; overflow: hidden">
+    <span style="align-self: center; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #5B6763">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+      Screenshots are blocked in all chats
+    </span>
+
+    <div style="align-self: flex-start; max-width: 270px; padding: 10px 14px; border-radius: 18px 18px 18px 6px; background: #FFFFFF; font-size: 15px; line-height: 1.4; border: 1px solid #E3E8E6">Here are the roses I told you about.</div>
+    <div style="align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 10px; border-radius: 18px 18px 18px 6px; background: #FFFFFF; border: 1px solid #E3E8E6; color: #1B2421">
+      <span style="width: 36px; height: 36px; border-radius: 18px; border: 2px dashed #1E5A57; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #1E5A57">1</span>
+      <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 800">3 photos · View once</span><span style="font-size: 12px; color: #5B6763">Opened</span></span>
+    </div>
+    <div style="align-self: flex-end; max-width: 270px; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: #1E5A57; color: #FFFFFF; font-size: 15px; line-height: 1.4">Beautiful! I’ve sent a date invite for Saturday.</div>
+
+    <div style="margin-top: 4px; padding: 14px; border-radius: 18px; background: #FFFFFF; border: 1px solid #C9D3CF; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 40px; height: 40px; border-radius: 12px; background: #FBF0DF; display: flex; align-items: center; justify-content: center; color: #7A4B0E">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        </span>
+        <span style="display: flex; flex-direction: column">
+          <span style="font-size: 15px; font-weight: 800">Coffee date · Accepted</span>
+          <span style="font-size: 13px; color: #5B6763">Sat 31 Oct, 2:00 pm · The Orchard Café</span>
+        </span>
+      </div>
+      <sc-if value="{{notBlocked}}" hint-placeholder-val="{{ true }}">
+        <a href="ShareDate.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border-radius: 22px; background: #EAF1EE; color: #1E5A57; font-size: 14px; font-weight: 700; text-decoration: none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+          Share my date &amp; location
+        </a>
+      </sc-if>
+      <sc-if value="{{blocked}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; font-weight: 700; color: #9B1C1C">Cancelled — you blocked Margaret</span>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{notBlocked}}" hint-placeholder-val="{{ true }}">
+      <span style="align-self: flex-end; font-size: 12px; color: #5B6763">Read 2:14 pm</span>
+    </sc-if>
+    <sc-if value="{{blocked}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="align-self: center; margin-top: 6px; padding: 8px 14px; border-radius: 14px; background: #FDE8E8; color: #9B1C1C; font-size: 13px; font-weight: 700; text-align: center">You blocked Margaret · 26 Oct</div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{notBlocked}}" hint-placeholder-val="{{ true }}">
+    <form style="padding: 10px 12px 34px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; align-items: center; gap: 8px">
+      <a href="SharePhoto.dc.html" aria-label="Send private photos" style="flex: none; width: 44px; height: 44px; border-radius: 22px; background: #F4F7F6; color: #1B2421; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="14" height="13" rx="2"></rect><path d="M17 4H5a2 2 0 00-2 2v11"></path><path d="M21 16l-4-4-6 6"></path></svg>
+      </a>
+      <a href="PlanDate.dc.html" aria-label="Plan a date" style="flex: none; width: 44px; height: 44px; border-radius: 22px; background: #F4F7F6; color: #1B2421; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+      </a>
+      <label for="chat-msg" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Message</label>
+      <input id="chat-msg" type="text" placeholder="Write a message…" style="flex: 1; min-width: 0; height: 44px; border-radius: 22px; border: 1px solid #C9D3CF; padding: 0 16px; font-family: inherit; font-size: 15px; color: #1B2421; background: #FFFFFF">
+      <button type="button" aria-label="Send" style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1E5A57; color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
+    </form>
+  </sc-if>
+  <sc-if value="{{blocked}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 14px 20px 34px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>
+        No further messages
+      </span>
+      <span style="font-size: 13px; line-height: 1.45; color: #5B6763">Margaret can’t message or call you, and this chat is read-only.</span>
+      <button type="button" onClick="{{unblock}}" style="height: 44px; padding: 0 22px; border-radius: 22px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #1B2421; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Unblock Margaret</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(15,22,20,0.45); display: flex; flex-direction: column; justify-content: flex-end">
+      <button type="button" aria-label="Close menu" onClick="{{close}}" style="flex: 1; border: 0; background: transparent; cursor: pointer"></button>
+      <sc-if value="{{menu}}" hint-placeholder-val="{{ false }}">
+        <div role="dialog" aria-label="Chat options" style="background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 10px 16px 34px; display: flex; flex-direction: column">
+          <span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #D5DDDA; margin-bottom: 10px"></span>
+          <a href="Profile.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px; text-decoration: none; color: #1B2421; font-size: 16px; font-weight: 700; border-bottom: 1px solid #EEF2F0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>View profile</a>
+          <button type="button" onClick="{{mute}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px; border: 0; border-bottom: 1px solid #EEF2F0; background: transparent; font-family: inherit; color: #1B2421; font-size: 16px; font-weight: 700; cursor: pointer; text-align: left">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M3 3l18 18"></path></svg>{{muteLabel}}</button>
+          <button type="button" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px; border: 0; border-bottom: 1px solid #EEF2F0; background: transparent; font-family: inherit; color: #1B2421; font-size: 16px; font-weight: 700; cursor: pointer; text-align: left">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4h12l-1.5 4L16 12H4"></path></svg>Report Margaret</button>
+          <button type="button" onClick="{{blockAction}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px; border: 0; background: transparent; font-family: inherit; color: #B42323; font-size: 16px; font-weight: 800; cursor: pointer; text-align: left">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>{{blockLabel}}</button>
+          <button type="button" onClick="{{close}}" style="margin-top: 10px; height: 52px; border-radius: 26px; border: 0; background: #F4F7F6; font-family: inherit; color: #1B2421; font-size: 16px; font-weight: 700; cursor: pointer">Cancel</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{confirm}}" hint-placeholder-val="{{ false }}">
+        <div role="alertdialog" aria-label="Block Margaret?" style="background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 22px 20px 34px; display: flex; flex-direction: column; gap: 14px">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: #FDE8E8; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B42323" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>
+          </span>
+          <h2 style="margin: 0; font-size: 22px; font-weight: 800">Block Margaret?</h2>
+          <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4; color: #3F4A46">
+            <li>• She can’t send you any more messages or calls</li>
+            <li>• She won’t see your profile or find you in search</li>
+            <li>• She isn’t told that you blocked her</li>
+            <li>• Your planned date is cancelled</li>
+          </ul>
+          <button type="button" onClick="{{doBlock}}" style="height: 52px; border-radius: 26px; border: 0; background: #B42323; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer">Block</button>
+          <button type="button" onClick="{{doBlock}}" style="height: 48px; border-radius: 24px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #B42323; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Block and report</button>
+          <button type="button" onClick="{{close}}" style="height: 44px; border: 0; background: transparent; color: #1B2421; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancel</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startView":{"editor":"enum","options":["chat","blocked"],"default":"chat"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { blocked: ((props && props.startView) ?? 'chat') === 'blocked', sheet: null, muted: false };
+  }
+  renderVals() {
+    const s = this.state;
+    return {
+      blocked: s.blocked,
+      notBlocked: !s.blocked,
+      sheetOpen: !!s.sheet,
+      menu: s.sheet === 'menu',
+      confirm: s.sheet === 'confirm',
+      statusText: s.blocked ? 'Blocked' : (s.muted ? 'Online now · Muted' : 'Online now'),
+      statusStyle: 'font-size: 12px; font-weight: 700; color: ' + (s.blocked ? '#9B1C1C' : '#1E5A57'),
+      avatarStyle: 'flex: none; width: 40px; height: 40px; border-radius: 20px; background: #C8D9D3; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #1E5A57; ' + (s.blocked ? 'opacity: 0.5;' : ''),
+      muteLabel: s.muted ? 'Unmute notifications' : 'Mute notifications',
+      openMenu: () => this.setState({ sheet: 'menu' }),
+      close: () => this.setState({ sheet: null }),
+      mute: () => this.setState({ muted: !s.muted, sheet: null }),
+      blockLabel: s.blocked ? 'Unblock Margaret' : 'Block Margaret',
+      blockAction: () => this.setState(s.blocked ? { blocked: false, sheet: null } : { sheet: 'confirm' }),
+      doBlock: () => this.setState({ blocked: true, sheet: null }),
+      unblock: () => this.setState({ blocked: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

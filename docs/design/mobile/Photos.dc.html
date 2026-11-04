@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Add your photos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; padding: 60px 24px 32px; overflow: hidden">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <a href="About.dc.html" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; margin-left: -10px; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; height: 6px; border-radius: 3px; background: #E3E8E6; overflow: hidden">
+      <div style="width: 83%; height: 6px; background: #1E5A57"></div>
+    </div>
+    <span style="font-size: 13px; color: #5B6763; font-weight: 600">5 of 6</span>
+  </div>
+
+  <h1 style="margin: 24px 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2">Add your photos</h1>
+  <p style="margin: 0 0 18px; font-size: 15px; line-height: 1.5; color: #5B6763">Add at least 1, up to 6. They stay blurred — someone only sees them clearly after they’ve liked your profile.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+    <sc-for list="{{tiles}}" as="t" hint-placeholder-count="6">
+      <div style="{{t.box}}">
+        <sc-if value="{{t.filled}}" hint-placeholder-val="{{ true }}">
+          <div style="{{t.photo}}">
+            <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#5E7D73" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+          </div>
+          <span style="{{t.mainTag}}">Main</span>
+        </sc-if>
+        <sc-if value="{{t.empty}}" hint-placeholder-val="{{ false }}">
+          <button type="button" aria-label="Add photo" style="width: 100%; height: 100%; border: 0; background: transparent; color: #1E5A57; font-family: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          </button>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  
+
+  <ul style="margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+    <li style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M12 20s-7-4.3-8.8-8.6C2 8.4 4 5.5 7 5.5c1.9 0 3.3 1 5 2.8 1.7-1.8 3.1-2.8 5-2.8 3 0 5 2.9 3.8 5.9C19 15.7 12 20 12 20z"></path></svg>
+      People like you for your words, values and story first.
+    </li>
+    <li style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+      Screenshots are blocked everywhere in Widowd.
+    </li>
+  </ul>
+
+  <a href="Discover.dc.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">Continue</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { blurred: true };
+  }
+  renderVals() {
+    const b = this.state.blurred;
+    const tints = ['#C8D9D3', '#D3DDEE', '#F3DECB'];
+    const tiles = [0, 1, 2, 3, 4, 5].map((i) => {
+      const filled = i < 3;
+      return {
+        filled, empty: !filled,
+        box: 'position: relative; height: 140px; border-radius: 16px; overflow: hidden; ' + (filled ? 'background: ' + tints[i] + ';' : 'border: 2px dashed #C9D3CF; box-sizing: border-box; background: #FFFFFF;'),
+        photo: 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: ' + tints[i % 3] + '; ' + (b ? 'filter: blur(9px); transform: scale(1.15);' : ''),
+        mainTag: i === 0 ? 'position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 10px; background: #1B2421; color: #FFFFFF; font-size: 11px; font-weight: 700' : 'display: none'
+      };
+    });
+    return {
+      tiles,
+      blurChecked: b ? 'true' : 'false',
+      toggle: () => this.setState({ blurred: !b }),
+      previewHint: b ? 'Blurred — before someone likes you' : 'Clear — after someone likes you',
+      track: 'flex: none; width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; cursor: pointer; display: flex; ' + (b ? 'background: #1E5A57; justify-content: flex-end;' : 'background: #8C9894; justify-content: flex-start;')
+    };
+  }
+}
+</script>
+</body>
+</html>

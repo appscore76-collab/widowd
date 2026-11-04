@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Plan a date</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <header style="padding: 52px 16px 8px; display: flex; align-items: center; gap: 8px">
+    <a href="Chat.dc.html" aria-label="Back to chat" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.4px">Plan a date</h1>
+      <span style="font-size: 13px; color: #5B6763">with Margaret</span>
+    </div>
+    <span style="width: 40px; height: 40px; border-radius: 20px; background: #C8D9D3; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #1E5A57">M</span>
+  </header>
+
+  
+
+  <div style="padding: 12px 20px 34px; border-top: 1px solid #E3E8E6; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; color: #5B6763; text-align: center">{{summary}}</span>
+    <a href="DateInvite.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">Send date invite</a>
+  </div><div style="flex: 1; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 16px; overflow: hidden">
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 800">What kind of date?</h2>
+      <div role="radiogroup" aria-label="Date type" style="display: flex; gap: 8px">
+        <sc-for list="{{types}}" as="t" hint-placeholder-count="5">
+          <button type="button" role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="{{t.style}}">
+            <span style="font-size: 13px; font-weight: 700">{{t.label}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 800">Day</h2>
+      <div role="radiogroup" aria-label="Day" style="display: flex; gap: 8px">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+          <button type="button" role="radio" aria-checked="{{d.checked}}" onClick="{{d.pick}}" style="{{d.style}}">
+            <span style="font-size: 11px; font-weight: 700; opacity: 0.85">{{d.dow}}</span>
+            <span style="font-size: 20px; font-weight: 800">{{d.num}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 800">Time</h2>
+      <div role="radiogroup" aria-label="Time" style="display: flex; gap: 8px">
+        <sc-for list="{{times}}" as="tm" hint-placeholder-count="4">
+          <button type="button" role="radio" aria-checked="{{tm.checked}}" onClick="{{tm.pick}}" style="{{tm.style}}">{{tm.label}}</button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 800">Where will you meet?</h2>
+      <sc-if value="{{true}}" hint-placeholder-val="{{ true }}">
+        <a href="PickPlace.dc.html" aria-label="Meeting place: The Orchard Café. Tap to search for a different place" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 2px solid #1E5A57; background: #EAF1EE; text-decoration: none; color: #1B2421">
+          <span style="flex: none; width: 44px; height: 44px; border-radius: 22px; background: #1E5A57; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+          </span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 800">The Orchard Café</span>
+            <span style="font-size: 12px; color: #3F4A46; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">14 Bridge St, Chester · 3.1 mi from you</span>
+          </span>
+          <span style="flex: none; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; color: #1E5A57">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Change
+          </span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+          <span style="font-size: 12px; font-weight: 700; color: #5B6763">Halfway suggestions:</span>
+          <sc-for list="{{quick}}" as="q" hint-placeholder-count="2">
+            <button type="button" aria-pressed="{{q.pressed}}" onClick="{{q.pick}}" style="{{q.style}}">{{q.name}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{false}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: #F4F7F6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="M16 10l6-3v10l-6-3z"></path></svg>
+          <span style="font-size: 14px; font-weight: 600">Video dates happen in Widowd — no place needed.</span>
+        </div>
+      </sc-if>
+    </section>
+
+    <label for="date-note" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800"><span>Add a note <span style="font-weight: 500; color: #5B6763; font-size: 12px">(optional)</span></span>
+      <input id="date-note" type="text" placeholder="I’ll be the one with the red scarf" style="height: 44px; border-radius: 14px; border: 1px solid #C9D3CF; padding: 0 14px; font-family: inherit; font-size: 14px; color: #1B2421">
+    </label>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { type: 'coffee', day: 'sat', time: '2:00 pm', venue: 'orchard' };
+  }
+  pill(on) {
+    return 'font-family: inherit; cursor: pointer; ' + (on ? 'background: #1E5A57; color: #FFFFFF; border: 1px solid #1E5A57;' : 'background: #FFFFFF; color: #1B2421; border: 1px solid #C9D3CF;');
+  }
+  renderVals() {
+    const s = this.state;
+    const typeDefs = [['coffee', 'Coffee'], ['lunch', 'Lunch'], ['walk', 'Walk'], ['dinner', 'Dinner'], ['video', 'Video']];
+    const types = typeDefs.map(([id, label]) => ({
+      label, checked: s.type === id ? 'true' : 'false',
+      pick: () => this.setState({ type: id }),
+      style: 'flex: 1; min-width: 0; height: 44px; border-radius: 14px; padding: 0; ' + this.pill(s.type === id)
+    }));
+    const dayDefs = [['thu', 'Thu', '29'], ['fri', 'Fri', '30'], ['sat', 'Sat', '31'], ['sun', 'Sun', '1'], ['mon', 'Mon', '2']];
+    const days = dayDefs.map(([id, dow, num]) => ({
+      dow, num, checked: s.day === id ? 'true' : 'false',
+      pick: () => this.setState({ day: id }),
+      style: 'flex: 1; height: 60px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; ' + this.pill(s.day === id)
+    }));
+    const times = ['11:00 am', '2:00 pm', '4:30 pm', '7:00 pm'].map((t) => ({
+      label: t, checked: s.time === t ? 'true' : 'false',
+      pick: () => this.setState({ time: t }),
+      style: 'flex: 1; height: 44px; border-radius: 22px; font-size: 13px; font-weight: 700; ' + this.pill(s.time === t)
+    }));
+    const venueDefs = [
+      { id: 'orchard', name: 'The Orchard Café', addr: '14 Bridge St, Chester · 3.1 mi from you' },
+      { id: 'park', name: 'Grosvenor Park Tea Room', addr: 'Grosvenor Park, Chester · 3.4 mi from you' }
+    ];
+    const v = venueDefs.find((x) => x.id === s.venue);
+    const quick = venueDefs.map((x) => ({
+      name: x.name,
+      pressed: s.venue === x.id ? 'true' : 'false',
+      pick: () => this.setState({ venue: x.id }),
+      style: 'height: 32px; padding: 0 10px; border-radius: 16px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (s.venue === x.id ? 'background: #1E5A57; color: #FFFFFF; border: 1px solid #1E5A57;' : 'background: #FFFFFF; color: #1B2421; border: 1px solid #C9D3CF;')
+    }));
+    const t = typeDefs.find((x) => x[0] === s.type)[1];
+    const d = dayDefs.find((x) => x[0] === s.day);
+    const isVideo = s.type === 'video';
+    const where = isVideo ? 'on Widowd video' : 'at ' + v.name;
+    return {
+      types, days, times, quick,
+      inPerson: !isVideo, isVideo,
+      placeName: v.name, placeAddr: v.addr,
+      placeAria: 'Meeting place: ' + v.name + '. Tap to search for a different place',
+      summary: t + ' · ' + d[1] + ' ' + d[2] + ' · ' + s.time + ' · ' + where
+    };
+  }
+}
+</script>
+</body>
+</html>
