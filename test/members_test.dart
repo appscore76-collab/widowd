@@ -78,7 +78,12 @@ class FakeMembersRepository implements MembersRepository {
   }
 
   @override
-  Future<List<Suggestion>> suggestions() async => suggested;
+  Future<List<Suggestion>> suggestions({int offset = 0, int limit = 24}) async =>
+      suggested
+          .where((s) => s.status == 'suggested')
+          .skip(offset)
+          .take(limit)
+          .toList();
 
   final savedTokens = <String>[];
 
@@ -384,13 +389,18 @@ void main() {
       expect(find.textContaining('matched'), findsNothing);
     });
 
-    testWidgets('Like with a reciprocal shows a match', (tester) async {
+    testWidgets('Like with a reciprocal matches and leaves the feed', (
+      tester,
+    ) async {
       final repo = repoWithRobert(reciprocal: {'robert'});
       await pumpDiscoverWith(tester, repo);
+      final age = DateTime.now().year - 1959;
+      expect(find.text('Robert, $age'), findsOneWidget);
 
       await tapText(tester, 'Like');
 
-      expect(find.text('You’re matched'), findsOneWidget);
+      // A match moves out of Discover (into Matches / Chats) with a toast.
+      expect(find.text('Robert, $age'), findsNothing);
       expect(find.textContaining('match with Robert'), findsOneWidget);
     });
 
@@ -398,6 +408,36 @@ void main() {
       await pumpShell(tester, FakeMembersRepository(me: listedMe));
 
       expect(find.text('No suggestions right now'), findsOneWidget);
+    });
+
+    testWidgets('Discover paginates with Show more', (tester) async {
+      final many = [
+        for (var i = 0; i < 13; i++)
+          Suggestion(
+            matchId: i,
+            member: Member(
+              id: 'p$i',
+              displayName: 'Person$i',
+              birthYear: 1960,
+              gender: 'man',
+              interestedIn: const ['woman'],
+              listed: true,
+            ),
+            status: 'suggested',
+            reasons: const [],
+            createdAt: DateTime(2026, 1, 1),
+          ),
+      ];
+      await pumpShell(
+        tester,
+        FakeMembersRepository(me: listedMe, suggested: many),
+      );
+
+      // The first page holds 12; the 13th loads only on "Show more".
+      expect(find.textContaining('Person12'), findsNothing);
+      await tapText(tester, 'Show more');
+      expect(find.textContaining('Person12'), findsOneWidget);
+      expect(find.text('Show more'), findsNothing);
     });
 
     testWidgets('search lists members and filters them', (tester) async {

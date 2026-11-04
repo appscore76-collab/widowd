@@ -22,60 +22,73 @@ class SuggestionsPage extends ConsumerStatefulWidget {
 }
 
 class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
-  List<Suggestion>? _items;
+  static const _pageSize = 12;
+
+  final _items = <Suggestion>[];
+  bool _loading = false;
+  bool _hasMore = true;
   Object? _error;
+
+  /// Bumped on each refresh so stale responses are dropped.
+  int _generation = 0;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(reset: true);
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool reset = false}) async {
+    if (_loading && !reset) return;
+    final generation = reset ? ++_generation : _generation;
     setState(() {
-      _items = null;
-      _error = null;
+      _loading = true;
+      if (reset) {
+        _error = null;
+        _items.clear();
+        _hasMore = true;
+      }
     });
     try {
-      final items = await widget.repository.suggestions();
-      if (mounted) setState(() => _items = items);
+      final page = await widget.repository.suggestions(
+        offset: _items.length,
+        limit: _pageSize,
+      );
+      if (!mounted || generation != _generation) return;
+      setState(() {
+        _items.addAll(page);
+        _hasMore = page.length == _pageSize;
+      });
     } catch (e) {
-      if (mounted) setState(() => _error = e);
+      if (mounted && generation == _generation) setState(() => _error = e);
+    } finally {
+      if (mounted && generation == _generation) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   Future<void> _pass(Suggestion s) async {
-    setState(() => _items = [..._items!]..remove(s));
+    setState(() => _items.remove(s));
     try {
       await widget.repository.passMember(s.member.id);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _items = [..._items!, s]);
+      setState(() => _items.add(s));
       _toast('Could not pass. Please try again.');
     }
   }
 
   Future<void> _like(Suggestion s) async {
-    // Unlock the photo straight away; confirm with the server.
     ref.read(likedIdsProvider.notifier).add(s.member.id);
     try {
       final matched = await widget.repository.likeMember(s.member.id);
       if (!mounted) return;
       if (matched) {
-        final i = _items!.indexOf(s);
-        if (i != -1) {
-          setState(
-            () => _items![i] = Suggestion(
-              matchId: s.matchId,
-              member: s.member,
-              status: 'matched',
-              reasons: s.reasons,
-              createdAt: s.createdAt,
-            ),
-          );
-        }
-        // Pick up the new conversation so Message works and photos stay clear.
+        // A match leaves the Discover feed — it now lives under Matches / Chats.
+        setState(() => _items.remove(s));
         ref.read(matchedConversationsProvider.notifier).refresh();
+        ref.read(totalUnreadProvider.notifier).refresh();
         _toast('It’s a match with ${s.member.displayName ?? 'them'}!');
       } else {
         setState(() {}); // reflect the liked state on the card
@@ -96,19 +109,21 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
   Widget build(BuildContext context) {
     final liked = ref.watch(likedIdsProvider);
 
-    if (_error != null) {
+    if (_items.isEmpty && _error != null) {
       return MessageView(
         icon: Icons.cloud_off_outlined,
         title: 'Suggestions could not be loaded',
         message: 'Check your connection and try again.',
-        action: FilledButton(onPressed: _load, child: const Text('Try again')),
+        action: FilledButton(
+          onPressed: () => _load(reset: true),
+          child: const Text('Try again'),
+        ),
       );
     }
-    final items = _items;
-    if (items == null) {
+    if (_items.isEmpty && _loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (items.isEmpty) {
+    if (_items.isEmpty) {
       return MessageView(
         icon: Icons.favorite_border_rounded,
         title: 'No suggestions right now',
@@ -116,71 +131,70 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
             'We look for people who could be a good fit for you every day. '
             'Check back soon, or search members in the meantime.',
         action: OutlinedButton(
-          onPressed: _load,
+          onPressed: () => _load(reset: true),
           child: const Text('Check again'),
         ),
       );
     }
     return RefreshIndicator(
-      onRefresh: _load,
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
+      onRefresh: () => _load(reset: true),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Semantics(
-                          header: true,
-                          child: Text(
-                            'Today’s suggestions',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '${items.length} '
-                        '${items.length == 1 ? 'person' : 'people'}',
-                        style: jakarta(13, weight: 600, color: AppColors.muted),
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Today’s suggestions',
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Like someone for who they are. When you both like each '
-                    'other, you match and their photos unlock. New suggestions '
-                    'arrive daily.',
-                    style: jakarta(14, color: AppColors.muted, height: 1.5),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Like someone for who they are. When you both like each '
+                  'other, you match and their photos unlock. New suggestions '
+                  'arrive daily.',
+                  style: jakarta(14, color: AppColors.muted, height: 1.5),
+                ),
+              ],
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            sliver: SliverToBoxAdapter(
-              child: AutoGrid(
-                minItemWidth: 420,
-                gapX: 16,
-                gapY: 16,
-                children: [
-                  for (final s in items)
-                    SuggestionCard(
-                      suggestion: s,
-                      liked: liked.contains(s.member.id),
-                      onLike: () => _like(s),
-                      onPass: () => _pass(s),
-                      onMessage: () => _message(s),
-                    ),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: AutoGrid(
+              minItemWidth: 420,
+              gapX: 16,
+              gapY: 16,
+              children: [
+                for (final s in _items)
+                  SuggestionCard(
+                    suggestion: s,
+                    liked: liked.contains(s.member.id),
+                    onLike: () => _like(s),
+                    onPass: () => _pass(s),
+                    onMessage: () => _message(s),
+                  ),
+              ],
             ),
           ),
+          if (_hasMore || _error != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+              child: Center(
+                child: _loading
+                    ? const CircularProgressIndicator()
+                    : OutlinedButton(
+                        onPressed: _load,
+                        child: Text(_error != null ? 'Try again' : 'Show more'),
+                      ),
+              ),
+            )
+          else
+            const SizedBox(height: 16),
         ],
       ),
     );
@@ -207,7 +221,6 @@ class SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = suggestion.member;
-    final matched = suggestion.status == 'matched';
     final meta = _metaLine(m);
     void open() => openMember(context, m, reasons: suggestion.reasons);
 
@@ -223,8 +236,9 @@ class SuggestionCard extends StatelessWidget {
                 child: MemberPhoto(
                   member: m,
                   borderRadius: BorderRadius.circular(30),
-                  // The photo is revealed only once you've matched.
-                  locked: !matched,
+                  // Discover photos stay locked — a match (which leaves this
+                  // feed) is what reveals them.
+                  locked: true,
                 ),
               ),
               const SizedBox(width: 12),
@@ -282,67 +296,37 @@ class SuggestionCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          if (matched)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.favorite_rounded,
-                      color: AppColors.teal,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'You’re matched',
-                      style: jakarta(14, weight: 800, color: AppColors.teal),
-                    ),
-                  ],
+          Row(
+            children: [
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.close_rounded,
+                  label: 'Pass',
+                  onPressed: onPass,
                 ),
-                const SizedBox(height: 10),
-                _ActionButton(
-                  icon: Icons.chat_bubble_rounded,
-                  label: 'Message',
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _ActionButton(
+                  icon: liked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  label: liked ? 'Liked' : 'Like',
                   filled: true,
+                  onPressed: liked ? null : onLike,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: 'Message',
                   locked: true,
                   onPressed: onMessage,
                 ),
-              ],
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.close_rounded,
-                    label: 'Pass',
-                    onPressed: onPass,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _ActionButton(
-                    icon: liked
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    label: liked ? 'Liked' : 'Like',
-                    filled: true,
-                    onPressed: liked ? null : onLike,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    label: 'Message',
-                    locked: true,
-                    onPressed: onMessage,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ),
     );

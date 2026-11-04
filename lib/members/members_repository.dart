@@ -31,9 +31,10 @@ abstract class MembersRepository {
     BrowseFilter filter = const BrowseFilter(),
   });
 
-  /// People the system suggested for the signed-in member, newest first.
-  /// Excludes ones the member has passed on.
-  Future<List<Suggestion>> suggestions();
+  /// Not-yet-matched suggestions for the signed-in member, newest first, a
+  /// page at a time. Matched people move to the Matches view, so they're
+  /// excluded here (as are passed/ended ones).
+  Future<List<Suggestion>> suggestions({int offset = 0, int limit = 24});
 
   /// Likes a member. Returns true if it created a mutual match.
   Future<bool> likeMember(String id);
@@ -170,7 +171,7 @@ class SupabaseMembersRepository implements MembersRepository {
   }
 
   @override
-  Future<List<Suggestion>> suggestions() async {
+  Future<List<Suggestion>> suggestions({int offset = 0, int limit = 24}) async {
     final me = currentUserId;
     final rows = await _client
         .from('matches')
@@ -179,8 +180,9 @@ class SupabaseMembersRepository implements MembersRepository {
           'a:profiles!matches_user_a_fkey(${Member.columns}), '
           'b:profiles!matches_user_b_fkey(${Member.columns})',
         )
-        .neq('status', 'ended')
-        .order('created_at', ascending: false);
+        .eq('status', 'suggested')
+        .order('created_at', ascending: false)
+        .range(offset, offset + limit - 1);
 
     final suggestions = <Suggestion>[];
     for (final row in rows) {

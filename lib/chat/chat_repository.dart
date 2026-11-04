@@ -8,8 +8,9 @@ import 'chat.dart';
 abstract class ChatRepository {
   String get currentUserId;
 
-  /// The signed-in member's conversations, newest activity first.
-  Future<List<Conversation>> conversations();
+  /// The signed-in member's conversations, newest activity first, a page at a
+  /// time.
+  Future<List<Conversation>> conversations({int offset = 0, int limit = 20});
 
   /// The conversation id for the matched member [peerId], or null if there
   /// isn't one (not matched, or it isn't ready yet).
@@ -47,10 +48,18 @@ class SupabaseChatRepository implements ChatRepository {
   String get currentUserId => _client.auth.currentUser!.id;
 
   @override
-  Future<List<Conversation>> conversations() async {
+  Future<List<Conversation>> conversations({
+    int offset = 0,
+    int limit = 20,
+  }) async {
     final me = currentUserId;
-    final rows = (await _client.rpc('my_conversations') as List)
-        .cast<Map<String, dynamic>>();
+    final rows =
+        (await _client.rpc(
+                  'my_conversations',
+                  params: {'p_limit': limit, 'p_offset': offset},
+                )
+                as List)
+            .cast<Map<String, dynamic>>();
     final conversations = [
       for (final row in rows)
         Conversation(
