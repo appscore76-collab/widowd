@@ -87,13 +87,7 @@ class _BrowsePageState extends State<BrowsePage> {
   void _onQueryChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), () {
-      _setFilter(
-        BrowseFilter(
-          query: value,
-          photoVerified: _filter.photoVerified,
-          idVerified: _filter.idVerified,
-        ),
-      );
+      _setFilter(_filter.copyWith(query: value));
     });
   }
 
@@ -141,28 +135,26 @@ class _BrowsePageState extends State<BrowsePage> {
             runSpacing: 8,
             children: [
               _FilterPill(
+                label: 'Matched',
+                icon: Icons.favorite_rounded,
+                selected: _filter.matched,
+                onTap: () =>
+                    _setFilter(_filter.copyWith(matched: !_filter.matched)),
+              ),
+              _FilterPill(
                 label: 'Photo verified',
                 icon: Icons.verified_rounded,
                 selected: _filter.photoVerified,
                 onTap: () => _setFilter(
-                  BrowseFilter(
-                    query: _filter.query,
-                    photoVerified: !_filter.photoVerified,
-                    idVerified: _filter.idVerified,
-                  ),
+                  _filter.copyWith(photoVerified: !_filter.photoVerified),
                 ),
               ),
               _FilterPill(
                 label: 'ID checked',
                 icon: Icons.badge_outlined,
                 selected: _filter.idVerified,
-                onTap: () => _setFilter(
-                  BrowseFilter(
-                    query: _filter.query,
-                    photoVerified: _filter.photoVerified,
-                    idVerified: !_filter.idVerified,
-                  ),
-                ),
+                onTap: () =>
+                    _setFilter(_filter.copyWith(idVerified: !_filter.idVerified)),
               ),
             ],
           ),
@@ -199,6 +191,17 @@ class _BrowsePageState extends State<BrowsePage> {
                 onPressed: () => _load(reset: true),
                 child: const Text('Check again'),
               ),
+            )
+          : _filter.matched &&
+                _filter.query.trim().isEmpty &&
+                !_filter.photoVerified &&
+                !_filter.idVerified
+          ? const MessageView(
+              icon: Icons.favorite_border_rounded,
+              title: 'No matches yet',
+              message:
+                  'When you and someone both like each other, they’ll show up '
+                  'here. Keep exploring Discover.',
             )
           : const MessageView(
               icon: Icons.search_off_rounded,
