@@ -291,7 +291,8 @@ class SuggestionCard extends StatelessWidget {
                     background: AppColors.tealTint,
                     color: AppColors.teal,
                   ),
-                for (final t in m.interests) Tag.sand(t),
+                // Only the first three interests on the Discover card.
+                for (final t in m.interests.take(3)) Tag.sand(t),
               ],
             ),
           ],
@@ -334,8 +335,12 @@ class SuggestionCard extends StatelessWidget {
 
   /// "Chester · Widowed 2–5 years · 2 children (grown up)".
   static String? _metaLine(Member m) {
+    // Work shows only the first part, before any comma (e.g. "Nurse" from
+    // "Nurse, retired").
+    final work = m.occupation?.split(',').first.trim();
     final parts = <String>[
       if (m.city != null && m.city!.trim().isNotEmpty) m.city!.trim(),
+      if (work != null && work.isNotEmpty) work,
       if (m.journey != null && journeyLabel(m.journey!) != null)
         'Widowed ${journeyLabel(m.journey!)!.toLowerCase()}',
       if (m.childrenCount != null)

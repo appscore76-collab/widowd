@@ -27,6 +27,9 @@ class FakeMembersRepository implements MembersRepository {
 
   /// Members whose id is in here will produce a match when liked.
   final Set<String> reciprocalLikers = {};
+
+  /// Members the signed-in member has already matched with (Matched filter).
+  final Set<String> matchedIds = {};
   final List<String> liked = [];
   final List<String> passed = [];
 
@@ -65,6 +68,7 @@ class FakeMembersRepository implements MembersRepository {
     lastFilter = filter;
     final q = filter.query.trim().toLowerCase();
     return members
+        .where((m) => !filter.matched || matchedIds.contains(m.id))
         .where((m) => !filter.photoVerified || m.photoVerified)
         .where((m) => !filter.idVerified || m.idVerified)
         .where(
@@ -410,6 +414,46 @@ void main() {
       expect(find.text('No suggestions right now'), findsOneWidget);
     });
 
+    testWidgets('Discover card trims Work to before the comma and caps '
+        'interests at three', (tester) async {
+      const rich = Member(
+        id: 'rich',
+        displayName: 'Maggie',
+        birthYear: 1961,
+        gender: 'woman',
+        interestedIn: ['man'],
+        city: 'Chester',
+        occupation: 'Nurse, retired',
+        interests: ['Reading', 'Walking', 'Cooking', 'Gardening', 'Travel'],
+        listed: true,
+      );
+      await pumpShell(
+        tester,
+        FakeMembersRepository(
+          me: listedMe,
+          suggested: [
+            Suggestion(
+              matchId: 7,
+              member: rich,
+              status: 'suggested',
+              reasons: const [],
+              createdAt: DateTime(2026, 1, 1),
+            ),
+          ],
+        ),
+      );
+
+      // Work shows "Nurse", not "Nurse, retired".
+      expect(find.textContaining('Nurse'), findsOneWidget);
+      expect(find.textContaining('retired'), findsNothing);
+      // Only the first three interests appear.
+      expect(find.text('Reading'), findsOneWidget);
+      expect(find.text('Walking'), findsOneWidget);
+      expect(find.text('Cooking'), findsOneWidget);
+      expect(find.text('Gardening'), findsNothing);
+      expect(find.text('Travel'), findsNothing);
+    });
+
     testWidgets('Discover paginates with Show more', (tester) async {
       final many = [
         for (var i = 0; i < 13; i++)
@@ -463,6 +507,25 @@ void main() {
       expect(repo.lastFilter!.query, 'leeds');
       expect(find.textContaining('Robert, '), findsOneWidget);
       expect(find.textContaining('David, '), findsNothing);
+    });
+
+    testWidgets('Matched filter narrows Search to matched members', (
+      tester,
+    ) async {
+      final repo = FakeMembersRepository(
+        me: listedMe,
+        members: const [robert, david],
+      )..matchedIds.add('david');
+      await pumpShell(tester, repo);
+
+      await tapText(tester, 'Search');
+      expect(find.textContaining('Robert, '), findsOneWidget);
+      expect(find.textContaining('David, '), findsOneWidget);
+
+      await tapText(tester, 'Matched');
+      expect(repo.lastFilter!.matched, isTrue);
+      expect(find.textContaining('Robert, '), findsNothing);
+      expect(find.textContaining('David, '), findsOneWidget);
     });
 
     testWidgets('Me shows the profile editor and saves', (tester) async {

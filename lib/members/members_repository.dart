@@ -62,13 +62,30 @@ class BrowseFilter {
     this.query = '',
     this.photoVerified = false,
     this.idVerified = false,
+    this.matched = false,
   });
 
   final String query;
   final bool photoVerified;
   final bool idVerified;
 
-  bool get isEmpty => query.trim().isEmpty && !photoVerified && !idVerified;
+  /// Only members the signed-in member has matched with.
+  final bool matched;
+
+  bool get isEmpty =>
+      query.trim().isEmpty && !photoVerified && !idVerified && !matched;
+
+  BrowseFilter copyWith({
+    String? query,
+    bool? photoVerified,
+    bool? idVerified,
+    bool? matched,
+  }) => BrowseFilter(
+    query: query ?? this.query,
+    photoVerified: photoVerified ?? this.photoVerified,
+    idVerified: idVerified ?? this.idVerified,
+    matched: matched ?? this.matched,
+  );
 }
 
 class SupabaseMembersRepository implements MembersRepository {
@@ -145,6 +162,24 @@ class SupabaseMembersRepository implements MembersRepository {
     int limit = 24,
     BrowseFilter filter = const BrowseFilter(),
   }) async {
+    if (filter.matched) {
+      // Only people the signed-in member has matched with. Pull the matched
+      // pairs first, then narrow the profiles query to those peers.
+      final me = currentUserId;
+      final matchRows = await _client
+          .from('matches')
+          .select('user_a, user_b')
+          .eq('status', 'matched')
+          .or('user_a.eq.$me,user_b.eq.$me');
+      final peerIds = [
+        for (final r in matchRows)
+          (r['user_a'] as String) == me
+              ? r['user_b'] as String
+              : r['user_a'] as String,
+      ];
+      if (peerIds.isEmpty) return const [];
+      return _browseAmong(peerIds, offset: offset, limit: limit, filter: filter);
+    }
     var query = _client
         .from('profiles')
         .select(Member.columns)
@@ -154,6 +189,36 @@ class SupabaseMembersRepository implements MembersRepository {
     if (filter.idVerified) query = query.eq('id_verified', true);
     // Keep only letters, digits, spaces and a few name characters, so the
     // keyword can't break out of the PostgREST filter syntax.
+    final keyword = filter.query
+        .replaceAll(RegExp(r"[^\p{L}\p{N} '\-]", unicode: true), ' ')
+        .trim();
+    if (keyword.isNotEmpty) {
+      final pattern = '*$keyword*';
+      query = query.or(
+        'display_name.ilike."$pattern",city.ilike."$pattern",'
+        'bio.ilike."$pattern"',
+      );
+    }
+    final rows = await query
+        .order('created_at', ascending: false)
+        .range(offset, offset + limit - 1);
+    return _withPhotoUrls(rows.map(Member.fromJson).toList());
+  }
+
+  /// `browse`, restricted to a known set of member ids (used by the Matched
+  /// filter). Applies the same keyword/badge narrowing.
+  Future<List<Member>> _browseAmong(
+    List<String> ids, {
+    required int offset,
+    required int limit,
+    required BrowseFilter filter,
+  }) async {
+    var query = _client
+        .from('profiles')
+        .select(Member.columns)
+        .inFilter('id', ids);
+    if (filter.photoVerified) query = query.eq('photo_verified', true);
+    if (filter.idVerified) query = query.eq('id_verified', true);
     final keyword = filter.query
         .replaceAll(RegExp(r"[^\p{L}\p{N} '\-]", unicode: true), ' ')
         .trim();
