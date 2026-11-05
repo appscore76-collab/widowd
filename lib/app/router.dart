@@ -9,6 +9,7 @@ import '../chat/chats_page.dart';
 import '../landing/landing_page.dart';
 import '../members/browse_page.dart';
 import '../members/home_shell.dart';
+import '../members/likes_you_page.dart';
 import '../members/member.dart';
 import '../members/member_detail_page.dart';
 import '../members/my_profile_page.dart';
@@ -25,6 +26,7 @@ abstract final class AppPaths {
   static const search = '/app/search';
   static const chats = '/app/chats';
   static const me = '/app/me';
+  static const likesYou = '/app/likes';
   static String member(String id) => '/app/members/$id';
   static String chat(int conversationId) => '/app/chat/$conversationId';
 }
@@ -133,6 +135,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             peer: args?.peer,
           );
         },
+      ),
+      GoRoute(
+        path: AppPaths.likesYou,
+        builder: (context, state) =>
+            LikesYouPage(repository: ref.read(membersRepositoryProvider)),
       ),
       GoRoute(
         path: '/app/members/:id',

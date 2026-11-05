@@ -25,8 +25,17 @@ class FakeMembersRepository implements MembersRepository {
   ProfileDraft? saved;
   BrowseFilter? lastFilter;
 
-  /// Members whose id is in here will produce a match when liked.
+  /// Members who already like the signed-in member (a like back may match).
   final Set<String> reciprocalLikers = {};
+
+  /// Members who have Widowd Plus (so the caller can match them for free).
+  final Set<String> plusAdmirers = {};
+
+  /// Whether the signed-in member has Widowd Plus.
+  bool plus = false;
+
+  /// What `likers()` returns.
+  List<Liker> likersList = [];
 
   /// Members the signed-in member has already matched with (Matched filter).
   final Set<String> matchedIds = {};
@@ -92,9 +101,24 @@ class FakeMembersRepository implements MembersRepository {
   final savedTokens = <String>[];
 
   @override
-  Future<bool> likeMember(String id) async {
+  Future<List<Liker>> likers({int offset = 0, int limit = 24}) async =>
+      likersList.skip(offset).take(limit).toList();
+
+  @override
+  Future<bool> myPlusStatus() async => plus;
+
+  @override
+  Future<LikeResult> likeMember(String id) async {
+    if (reciprocalLikers.contains(id)) {
+      if (plus || plusAdmirers.contains(id)) {
+        liked.add(id);
+        return LikeResult.matched;
+      }
+      // Mutual like but neither side has Plus: gated, nothing recorded.
+      return LikeResult.plusRequired;
+    }
     liked.add(id);
-    return reciprocalLikers.contains(id);
+    return LikeResult.liked;
   }
 
   @override
@@ -350,6 +374,8 @@ void main() {
         ],
       );
       r.reciprocalLikers.addAll(reciprocal);
+      // A reciprocal admirer here has Plus, so liking back matches for free.
+      r.plusAdmirers.addAll(reciprocal);
       return r;
     }
 
@@ -406,6 +432,24 @@ void main() {
       // A match moves out of Discover (into Matches / Chats) with a toast.
       expect(find.text('Robert, $age'), findsNothing);
       expect(find.textContaining('match with Robert'), findsOneWidget);
+    });
+
+    testWidgets('Like with a reciprocal but no Plus asks for Plus', (
+      tester,
+    ) async {
+      // Robert already likes me, but neither of us has Plus: the match is gated.
+      final repo = repoWithRobert()..reciprocalLikers.add('robert');
+      await pumpDiscoverWith(tester, repo);
+      final age = DateTime.now().year - 1959;
+
+      await tapText(tester, 'Like');
+
+      // No match — the card stays and the Plus sheet explains why.
+      expect(find.text('Robert, $age'), findsOneWidget);
+      expect(
+        find.textContaining('Like back to match'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('explains when there are no suggestions', (tester) async {
@@ -526,6 +570,67 @@ void main() {
       expect(repo.lastFilter!.matched, isTrue);
       expect(find.textContaining('Robert, '), findsNothing);
       expect(find.textContaining('David, '), findsOneWidget);
+    });
+
+    Liker likerOf(Member m, {bool free = false}) =>
+        Liker(member: m, freeToLikeBack: free, likedAt: DateTime(2026, 1, 1));
+
+    Suggestion suggestionOf(Member m) => Suggestion(
+      matchId: 99,
+      member: m,
+      status: 'suggested',
+      reasons: const [],
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    testWidgets('Likes you lists admirers and a free like-back matches', (
+      tester,
+    ) async {
+      final repo = FakeMembersRepository(
+        me: listedMe,
+        members: const [robert],
+        suggested: [suggestionOf(david)],
+      )
+        ..likersList = [likerOf(robert, free: true)]
+        ..reciprocalLikers.add('robert')
+        ..plusAdmirers.add('robert');
+      await pumpShell(tester, repo);
+
+      // Open "Likes you" from the Discover heart.
+      await tester.tap(find.byTooltip('Likes you'));
+      await tester.pumpAndSettle();
+
+      final age = DateTime.now().year - 1959;
+      expect(find.text('Likes you'), findsOneWidget);
+      expect(find.text('1 new'), findsOneWidget);
+      expect(find.text('Robert, $age'), findsOneWidget);
+      expect(find.text('Free to like back'), findsOneWidget);
+
+      await tapText(tester, 'Like back');
+      expect(find.textContaining('It’s a match'), findsOneWidget);
+      expect(find.text('Say hello'), findsOneWidget);
+    });
+
+    testWidgets('Likes you gates a non-Plus like-back behind Plus', (
+      tester,
+    ) async {
+      // The admirer has no Plus, and neither do I: liking back needs Plus.
+      final repo = FakeMembersRepository(
+        me: listedMe,
+        members: const [robert],
+        suggested: [suggestionOf(david)],
+      )
+        ..likersList = [likerOf(robert, free: false)]
+        ..reciprocalLikers.add('robert');
+      await pumpShell(tester, repo);
+
+      await tester.tap(find.byTooltip('Likes you'));
+      await tester.pumpAndSettle();
+      expect(find.text('Plus to like back'), findsOneWidget);
+
+      await tapText(tester, 'Like back');
+      expect(find.textContaining('It’s a match'), findsNothing);
+      expect(find.textContaining('Like back to match'), findsOneWidget);
     });
 
     testWidgets('Me shows the profile editor and saves', (tester) async {

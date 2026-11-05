@@ -36,8 +36,16 @@ abstract class MembersRepository {
   /// excluded here (as are passed/ended ones).
   Future<List<Suggestion>> suggestions({int offset = 0, int limit = 24});
 
-  /// Likes a member. Returns true if it created a mutual match.
-  Future<bool> likeMember(String id);
+  /// People who have liked the signed-in member ("Likes you"), newest first.
+  /// Free to view; liking back is where the Plus paywall applies.
+  Future<List<Liker>> likers({int offset = 0, int limit = 24});
+
+  /// Whether the signed-in member has active Widowd Plus.
+  Future<bool> myPlusStatus();
+
+  /// Likes a member. Returns how the like resolved (liked / matched /
+  /// plusRequired — a match needs at least one side on Widowd Plus).
+  Future<LikeResult> likeMember(String id);
 
   /// Passes on a member (removes them from suggestions).
   Future<void> passMember(String id);
@@ -283,9 +291,31 @@ class SupabaseMembersRepository implements MembersRepository {
   }
 
   @override
-  Future<bool> likeMember(String id) async {
-    final matched = await _client.rpc('like_member', params: {'target': id});
-    return matched == true;
+  Future<List<Liker>> likers({int offset = 0, int limit = 24}) async {
+    final rows = await _client.rpc(
+      'likers',
+      params: {'p_limit': limit, 'p_offset': offset},
+    );
+    final likers = [
+      for (final row in (rows as List).cast<Map<String, dynamic>>())
+        Liker.fromJson(row),
+    ];
+    final members = await _withPhotoUrls([for (final l in likers) l.member]);
+    return [
+      for (var i = 0; i < likers.length; i++) likers[i].withMember(members[i]),
+    ];
+  }
+
+  @override
+  Future<bool> myPlusStatus() async {
+    final result = await _client.rpc('my_plus_status');
+    return result == true;
+  }
+
+  @override
+  Future<LikeResult> likeMember(String id) async {
+    final status = await _client.rpc('like_member', params: {'target': id});
+    return likeResultFromString(status as String? ?? 'liked');
   }
 
   @override

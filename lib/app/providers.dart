@@ -44,6 +44,43 @@ class LikedIdsNotifier extends Notifier<Set<String>> {
 
   /// Records a like locally so the member's photo unlocks immediately.
   void add(String id) => state = {...state, id};
+
+  /// Undoes a local like (e.g. when a like-back turned out to need Plus).
+  void remove(String id) => state = {...state}..remove(id);
+}
+
+/// Whether the signed-in member has active Widowd Plus. Loads in the
+/// background; defaults to false (and for tests without the RPC).
+final plusStatusProvider = FutureProvider<bool>((ref) async {
+  try {
+    return await ref.read(membersRepositoryProvider).myPlusStatus();
+  } catch (_) {
+    return false;
+  }
+});
+
+/// How many people have liked the signed-in member, for the Discover "Likes
+/// you" badge. Loads in the background; failures leave it at 0.
+final likesYouCountProvider =
+    NotifierProvider<LikesYouCountNotifier, int>(LikesYouCountNotifier.new);
+
+class LikesYouCountNotifier extends Notifier<int> {
+  @override
+  int build() {
+    _load();
+    return 0;
+  }
+
+  Future<void> _load() async {
+    try {
+      state = (await ref.read(membersRepositoryProvider).likers()).length;
+    } catch (_) {
+      // Keep the current count; the badge just doesn't update this time.
+    }
+  }
+
+  /// Recomputes the badge, e.g. after acting on a liker.
+  Future<void> refresh() => _load();
 }
 
 /// The chat data layer. Overridden in [WidowdApp] (and in tests).
