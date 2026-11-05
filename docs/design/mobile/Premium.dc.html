@@ -33,7 +33,7 @@ a{color:#1E5A57}a:hover{color:#163F3D}
     </div>
     <sc-for list="{{features}}" as="f" hint-placeholder-count="7">
       <div style="display: flex; align-items: stretch; border-top: 1px solid #EEF2F0">
-        <span style="flex: 1; padding: 5px 0; font-weight: 600">{{f.label}}</span>
+        <span style="flex: 1; padding: 4px 0; font-weight: 600">{{f.label}}</span>
         <span style="width: 56px; display: flex; align-items: center; justify-content: center">
           <sc-if value="{{f.free}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Included in Free"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
           <sc-if value="{{f.notFree}}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="Not in Free" style="color: #8C9894; font-weight: 700">—</span></sc-if>
@@ -81,14 +81,16 @@ class Component extends DCLogic {
     const features = [
       ['Registration', true],
       ['Peer-support community', true],
-      ['Suggestions, likes & matches', true],
+      ['Suggestions & sending likes', true],
+      ['See who likes you', true],
+      ['Like back, match & see photos', false],
       ['Message & video chat', false],
       ['Share my date & location', false],
       ['Photo verified & ID badges', false],
       ['Incognito & view-once photos', false]
     ].map(([label, free]) => ({ label, free, notFree: !free }));
     const defs = [
-      { id: 'free', name: 'Free', sub: 'Join, like, match & Community', price: '£0', per: 'forever', tag: '' },
+      { id: 'free', name: 'Free', sub: 'Like, see who likes you & Community', price: '£0', per: 'forever', tag: '' },
       { id: 'week', name: 'Weekly', sub: 'Try Plus, cancel anytime', price: '[PRICE]', per: 'per week', tag: '' },
       { id: 'month', name: 'Monthly', sub: 'Billed every month', price: '[PRICE]', per: 'per month', tag: 'Most popular' },
       { id: 'six', name: '6 months', sub: '[PRICE] billed every 6 months', price: '[PRICE]', per: 'per month', tag: 'Best value' }
