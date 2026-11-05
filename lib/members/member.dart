@@ -287,6 +287,51 @@ class ProfileDraft {
   };
 }
 
+/// How a like attempt resolved (the `like_member` RPC result).
+enum LikeResult {
+  /// Interest recorded; no reciprocal like yet.
+  liked,
+
+  /// Mutual like and at least one side has Plus — it's a match.
+  matched,
+
+  /// Mutual like but neither side has Widowd Plus — the match is gated.
+  plusRequired,
+}
+
+LikeResult likeResultFromString(String value) => switch (value) {
+  'matched' => LikeResult.matched,
+  'plus_required' => LikeResult.plusRequired,
+  _ => LikeResult.liked,
+};
+
+/// Someone who has liked the signed-in member ("Likes you").
+class Liker {
+  const Liker({
+    required this.member,
+    required this.freeToLikeBack,
+    required this.likedAt,
+  });
+
+  /// Builds a liker from a `likers()` RPC row (profile columns plus the two
+  /// extra fields).
+  factory Liker.fromJson(Map<String, dynamic> json) => Liker(
+    member: Member.fromJson(json),
+    freeToLikeBack: json['free_to_like_back'] as bool? ?? false,
+    likedAt: DateTime.parse(json['liked_at'] as String),
+  );
+
+  final Member member;
+
+  /// True when the admirer already has Plus, so the caller can like back and
+  /// match for free; otherwise liking back needs the caller's own Plus.
+  final bool freeToLikeBack;
+  final DateTime likedAt;
+
+  Liker withMember(Member m) =>
+      Liker(member: m, freeToLikeBack: freeToLikeBack, likedAt: likedAt);
+}
+
 /// Someone the system suggested for the signed-in member.
 class Suggestion {
   const Suggestion({

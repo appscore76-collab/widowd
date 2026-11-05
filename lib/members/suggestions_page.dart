@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/providers.dart';
+import '../app/router.dart';
 import '../landing/landing_style.dart';
 import '../plus/plus.dart';
 import '../ui/app_theme.dart';
@@ -82,16 +84,23 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
   Future<void> _like(Suggestion s) async {
     ref.read(likedIdsProvider.notifier).add(s.member.id);
     try {
-      final matched = await widget.repository.likeMember(s.member.id);
+      final result = await widget.repository.likeMember(s.member.id);
       if (!mounted) return;
-      if (matched) {
-        // A match leaves the Discover feed — it now lives under Matches / Chats.
-        setState(() => _items.remove(s));
-        ref.read(matchedConversationsProvider.notifier).refresh();
-        ref.read(totalUnreadProvider.notifier).refresh();
-        _toast('It’s a match with ${s.member.displayName ?? 'them'}!');
-      } else {
-        setState(() {}); // reflect the liked state on the card
+      switch (result) {
+        case LikeResult.matched:
+          // A match leaves the Discover feed — it lives under Matches / Chats.
+          setState(() => _items.remove(s));
+          ref.read(matchedConversationsProvider.notifier).refresh();
+          ref.read(totalUnreadProvider.notifier).refresh();
+          _toast('It’s a match with ${s.member.displayName ?? 'them'}!');
+        case LikeResult.plusRequired:
+          // They already like you, but a match needs Widowd Plus — undo the
+          // optimistic like and upsell.
+          ref.read(likedIdsProvider.notifier).remove(s.member.id);
+          setState(() {});
+          await showPlusSheet(context, feature: 'Matching');
+        case LikeResult.liked:
+          setState(() {}); // reflect the liked state on the card
       }
     } catch (_) {
       if (mounted) _toast('Could not like. Please try again.');
@@ -108,6 +117,7 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
   @override
   Widget build(BuildContext context) {
     final liked = ref.watch(likedIdsProvider);
+    final likesYou = ref.watch(likesYouCountProvider);
 
     if (_items.isEmpty && _error != null) {
       return MessageView(
@@ -146,12 +156,20 @@ class _SuggestionsPageState extends ConsumerState<SuggestionsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Semantics(
-                  header: true,
-                  child: Text(
-                    'Today’s suggestions',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          'Today’s suggestions',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ),
+                    ),
+                    _LikesYouButton(count: likesYou),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -350,6 +368,64 @@ class SuggestionCard extends StatelessWidget {
             : childrenLabel(m.childrenCount!),
     ];
     return parts.isEmpty ? null : parts.join(' · ');
+  }
+}
+
+/// The heart shortcut to "Likes you", with a count badge, in the Discover
+/// header (design: Discover → LikesYou).
+class _LikesYouButton extends StatelessWidget {
+  const _LikesYouButton({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: count > 0 ? 'Likes you, $count waiting' : 'Likes you',
+      child: Tooltip(
+        message: 'Likes you',
+        child: InkWell(
+          onTap: () => context.push(AppPaths.likesYou),
+          borderRadius: BorderRadius.circular(22),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(
+                  Icons.favorite_rounded,
+                  color: AppColors.teal,
+                  size: 30,
+                ),
+                if (count > 0)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 18),
+                      decoration: BoxDecoration(
+                        color: AppColors.sandText,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Text(
+                        count > 9 ? '9+' : '$count',
+                        textAlign: TextAlign.center,
+                        style: jakarta(10, weight: 800, color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
