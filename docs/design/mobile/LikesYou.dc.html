@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widowd – Likes you</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E5A57}a:hover{color:#163F3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F7F6; color: #1B2421; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column; padding-top: 52px">
+  <header style="flex: none; padding: 0 16px; display: flex; align-items: center; gap: 4px">
+    <a href="Discover.dc.html" aria-label="Back to suggestions" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2421">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <h1 style="flex: 1; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px">Likes you</h1>
+    <span style="padding: 5px 11px; border-radius: 13px; background: #1E5A57; color: #FFFFFF; font-size: 13px; font-weight: 800">{{countText}}</span>
+  </header>
+  <p style="flex: none; margin: 6px 20px 12px; font-size: 14px; line-height: 1.45; color: #3F4A46">Seeing who likes you is free. Liking back makes a match and unlocks photos for you both.</p>
+
+  <ul style="flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0 20px 100px; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{likes}}" as="l" hint-placeholder-count="4">
+      <li style="background: #FFFFFF; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 16px rgba(27,36,33,0.06)">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="{{l.avatarBox}}">
+            <div style="{{l.avatarInner}}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5E7D73" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg></div>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 17px; font-weight: 800">{{l.name}}</span>
+            <span style="font-size: 12px; color: #5B6763">{{l.meta}}</span>
+          </div>
+          <span style="{{l.tagStyle}}">{{l.tag}}</span>
+        </div>
+        <p style="margin: 0; padding: 8px 12px; border-radius: 12px; background: #F4F7F6; font-size: 13px; line-height: 1.4; color: #3F4A46">{{l.why}}</p>
+        <sc-if value="{{l.open}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; gap: 8px">
+            <button type="button" aria-label="{{l.passLabel}}" onClick="{{l.pass}}" style="flex: 1; height: 44px; border-radius: 22px; border: 1px solid #C9D3CF; background: #FFFFFF; color: #3F4A46; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Pass</button>
+            <button type="button" aria-label="{{l.likeLabel}}" onClick="{{l.likeBack}}" style="{{l.likeStyle}}">
+              <sc-if value="{{l.locked}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></sc-if>
+              <sc-if value="{{l.unlocked}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.7 5c2 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.3 5 17.3 5c3.4 0 5.5 3.4 4.2 6.7C19.5 16.4 12 21 12 21z"></path></svg></sc-if>
+              Like back</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{l.matched}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border-radius: 14px; background: #1E5A57; color: #FFFFFF">
+            <span style="flex: 1; font-size: 13px; font-weight: 700; line-height: 1.35">It’s a match! Photos unlocked for you both.</span>
+            <a href="Chat.dc.html" style="font-size: 13px; font-weight: 800; color: #FFFFFF">Say hello</a>
+          </div>
+        </sc-if>
+        <sc-if value="{{l.passed}}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; font-size: 12px; color: #5B6763">You passed. {{l.first}} won’t be told.</p>
+        </sc-if>
+      </li>
+    </sc-for>
+  </ul>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; box-sizing: border-box; padding-top: 8px; background: #FFFFFF; border-top: 1px solid #E3E8E6; display: flex; justify-content: space-around; align-items: flex-start">
+    <a href="Discover.dc.html" aria-current="page" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #1E5A57; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>Discover</a>
+    <a href="Search.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Search</a>
+    <a href="Community.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 9h2a2 2 0 012 2v5a2 2 0 01-2 2h-1v3l-3-3h-4a2 2 0 01-2-2v-1"></path><path d="M3 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-3 3v-3H5a2 2 0 01-2-2z"></path></svg>Community</a>
+    <a href="Matches.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Chats</a>
+    <a href="Incognito.dc.html" style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #5B6763; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>Me</a>
+  </nav>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(27,36,33,0.45)"></div>
+    <section role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 30px; border-radius: 28px 28px 0 0; background: #FFFFFF; display: flex; flex-direction: column; gap: 12px">
+      <span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #C9D3CF"></span>
+      <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #8A5A16">WIDOWD PLUS</span>
+      <h2 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.25">{{sheetTitle}}</h2>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; font-size: 14px; line-height: 1.4; color: #3F4A46">
+        <li style="display: flex; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M5 12l5 5 9-10"></path></svg>Like back to match, and see each other’s photos</li>
+        <li style="display: flex; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M5 12l5 5 9-10"></path></svg>Message, video call and plan a date</li>
+        <li style="display: flex; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E5A57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M5 12l5 5 9-10"></path></svg>Anyone you like can like you back free</li>
+      </ul>
+      <a href="Premium.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #1E5A57; color: #FFFFFF; font-size: 17px; font-weight: 800; text-decoration: none">See plans</a>
+      <button type="button" onClick="{{closeSheet}}" style="height: 44px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 700; color: #3F4A46; cursor: pointer">Not now</button>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { matched: {}, passed: {}, sheet: -1 };
+  }
+  renderVals() {
+    const s = this.state;
+    const people = [
+      { name: 'Susan, 60', meta: 'Chester · 3 mi · 2 children', why: 'Liked your answer: “A perfect Sunday”', freeBack: true, tint: '#F6E7C8' },
+      { name: 'Eileen, 61', meta: 'Wrexham · 14 mi · 3 children', why: 'Liked your profile', freeBack: false, tint: '#D3DDEE' },
+      { name: 'Carol, 57', meta: 'Frodsham · 18 mi · 1 child', why: 'Liked your answer: “What I’m ready for now”', freeBack: true, tint: '#E6D9EC' },
+      { name: 'Joan, 59', meta: 'Mold · 12 mi · 4 children', why: 'Liked your profile', freeBack: false, tint: '#DCE6E2' },
+      { name: 'Helen, 62', meta: 'Crewe · 27 mi · 3 children', why: 'Liked your answer: “My journey”', freeBack: false, tint: '#E9DCD3' }
+    ];
+    const likes = people.map((p, i) => {
+      const first = p.name.split(',')[0];
+      const matched = !!s.matched[i];
+      const passed = !!s.passed[i];
+      return Object.assign({}, p, {
+        first, matched, passed,
+        open: !matched && !passed,
+        locked: !p.freeBack,
+        unlocked: p.freeBack,
+        tag: p.freeBack ? 'Free to like back' : 'Plus to like back',
+        tagStyle: 'flex: none; padding: 3px 8px; border-radius: 9px; font-size: 11px; font-weight: 800; ' + (p.freeBack ? 'background: #EAF1EE; color: #1E5A57;' : 'background: #FBF0DF; color: #7A4B0E;'),
+        avatarBox: 'flex: none; width: 52px; height: 52px; border-radius: 26px; overflow: hidden; background: ' + p.tint,
+        avatarInner: 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; ' + (matched ? '' : 'filter: blur(7px); transform: scale(1.25);'),
+        passLabel: 'Pass on ' + first,
+        likeLabel: p.freeBack ? 'Like ' + first + ' back, free' : 'Like ' + first + ' back – needs Widowd Plus',
+        likeStyle: 'flex: 1.6; display: flex; align-items: center; justify-content: center; gap: 7px; height: 44px; border-radius: 22px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; ' + (p.freeBack ? 'border: 0; background: #1E5A57; color: #FFFFFF;' : 'border: 2px solid #1E5A57; background: #FFFFFF; color: #1E5A57;'),
+        likeBack: () => {
+          if (p.freeBack) { const m = Object.assign({}, s.matched); m[i] = true; this.setState({ matched: m }); }
+          else this.setState({ sheet: i });
+        },
+        pass: () => { const x = Object.assign({}, s.passed); x[i] = true; this.setState({ passed: x }); }
+      });
+    });
+    const waiting = likes.filter((l) => l.open).length;
+    const sheetPerson = s.sheet >= 0 ? people[s.sheet].name.split(',')[0] : '';
+    return {
+      likes,
+      countText: waiting + ' new',
+      sheetOpen: s.sheet >= 0,
+      sheetTitle: 'Like ' + sheetPerson + ' back with Plus',
+      closeSheet: () => this.setState({ sheet: -1 })
+    };
+  }
+}
+</script>
+</body>
+</html>

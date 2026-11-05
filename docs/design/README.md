@@ -7,8 +7,8 @@ It was exported from the Widowd design canvas on claude.ai.
 docs/design/
 ├── README.md        ← this file
 ├── tokens.json      ← colours, fonts, sizes, radii, breakpoints
-├── mobile/          ← 23 iPhone screens (390 × 844)
-└── web/             ← 6 desktop layouts (1440 wide, responsive)
+├── mobile/          ← 24 iPhone screens (390 × 844)
+└── web/             ← 7 desktop layouts (1440 wide, responsive)
 ```
 
 ## How to read the screen files
@@ -40,6 +40,7 @@ The app is one Flutter codebase. Each page is built once and responds to the win
 | Feature | Phone | Desktop (1024px+) |
 |---|---|---|
 | Daily suggestions | `mobile/Discover` | `web/WebDiscover` (card grid) |
+| Likes you (free) | `mobile/LikesYou` (heart button in Discover) | `web/WebLikes` (sidebar item) |
 | Search | `mobile/Search` | `web/WebSearch` (filters panel + results grid) |
 | Profile | `mobile/Profile` | `web/WebProfile` (gallery left, details right) |
 | Chats | `mobile/Matches` + `mobile/Chat` | `web/WebChats` (list and conversation side by side) |
@@ -71,7 +72,11 @@ These are deliberate. Don't build these on web:
 
 - Font: Plus Jakarta Sans. Colours and sizes from `tokens.json` only.
 - Touch targets at least 44px. Text contrast at least 4.5:1.
-- Photos stay blurred until the viewer has liked that person.
+- Photos stay blurred until two people match. Then they unlock for those two only.
+- Free members can send likes and see who likes them (photos blurred).
+- Liking back (making a match) needs Plus, unless the person who liked you has Plus.
+- A match with at least one Plus member is fully open to both: photos, messages, video calls, dates.
+- Never reveal another member's subscription status, except the "Free to like back" tag on a like that came with Plus.
 - Never show private message text in notifications.
 
 ## Using this with Claude Code
