@@ -41,7 +41,9 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.secrets.outputs.ready == 'true'
         with:
-          version: latest
+          # Pinned: `latest` picked up CLI 3.0, which made hosted deploys
+          # require --yes and broke this job. Bump deliberately.
+          version: 3.0.0
 
       - name: Link widowd-dev
         if: steps.secrets.outputs.ready == 'true'
@@ -49,8 +51,8 @@ jobs:
 
       - name: Push migrations
         if: steps.secrets.outputs.ready == 'true'
-        run: supabase db push --linked --include-all
+        run: supabase db push --remote --include-all --yes
 
       - name: Deploy Edge Functions
         if: steps.secrets.outputs.ready == 'true'
-        run: supabase functions deploy --project-ref "$PROJECT_REF"
+        run: supabase functions deploy --remote --yes
